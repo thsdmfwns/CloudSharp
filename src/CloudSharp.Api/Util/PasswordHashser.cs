@@ -3,11 +3,11 @@ using System.Security.Cryptography;
 using FluentResults;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 
-namespace CloudSharp.Api.Service;
+namespace CloudSharp.Api.Util;
 
-public class PasswordHashService : IPasswordHashService
+public static class PasswordHasher
 {
-    private readonly KeyDerivationPrf _keyDerivationPrf = KeyDerivationPrf.HMACSHA256;
+    private const KeyDerivationPrf KeyDerivationPrf = Microsoft.AspNetCore.Cryptography.KeyDerivation.KeyDerivationPrf.HMACSHA256;
     private const int IterCount = 10000;
     private const int SaltSize = 128;
     private const int NumBytesRequested = 256;
@@ -31,7 +31,7 @@ public class PasswordHashService : IPasswordHashService
         return areSame;
     }
     
-    private uint ReadNetworkByteOrder(byte[] buffer, int offset)
+    private static uint ReadNetworkByteOrder(byte[] buffer, int offset)
     {
         return ((uint)buffer[offset + 0] << 24)
                | ((uint)buffer[offset + 1] << 16)
@@ -39,7 +39,7 @@ public class PasswordHashService : IPasswordHashService
                | ((uint)buffer[offset + 3]);
     }
     
-    private void WriteNetworkByteOrder(byte[] buffer, int offset, uint value)
+    private static void WriteNetworkByteOrder(byte[] buffer, int offset, uint value)
     {
         buffer[offset + 0] = (byte)(value >> 24);
         buffer[offset + 1] = (byte)(value >> 16);
@@ -47,7 +47,7 @@ public class PasswordHashService : IPasswordHashService
         buffer[offset + 3] = (byte)(value >> 0);
     }
 
-    public string HashPassword(string password)
+    public static string HashPassword(string password)
     {
         return Convert.ToBase64String(
             HashPassword(
@@ -58,24 +58,24 @@ public class PasswordHashService : IPasswordHashService
         );
     }
 
-    public Result VerifyPassword(string expected, string actual)
+    public static Result VerifyHashedPassword(string expectedHashedPassword, string actualPassword)
     {
-        var expectedPasswordHash = Convert.FromBase64String(expected);
-        return Result.OkIf(VerifyHashedPassword(expectedPasswordHash, actual), "");
+        var expectedPasswordHash = Convert.FromBase64String(expectedHashedPassword);
+        return Result.OkIf(VerifyHashedPassword(expectedPasswordHash, actualPassword), "wrong password");
     }
 
-    private byte[] HashPassword(string password, int iterCount, int saltSize, int numBytesRequested)
+    private static byte[] HashPassword(string password, int iterCount, int saltSize, int numBytesRequested)
     {
         using var rng = RandomNumberGenerator.Create();
         
         byte[] salt = new byte[saltSize];
         rng.GetBytes(salt);
         
-        byte[] subkey = KeyDerivation.Pbkdf2(password, salt, _keyDerivationPrf, iterCount, numBytesRequested);
+        byte[] subkey = KeyDerivation.Pbkdf2(password, salt, KeyDerivationPrf, iterCount, numBytesRequested);
 
         var outputBytes = new byte[13 + salt.Length + subkey.Length];
         outputBytes[0] = 0x01; // format marker
-        WriteNetworkByteOrder(outputBytes, 1, (uint)_keyDerivationPrf);
+        WriteNetworkByteOrder(outputBytes, 1, (uint)KeyDerivationPrf);
         WriteNetworkByteOrder(outputBytes, 5, (uint)iterCount);
         WriteNetworkByteOrder(outputBytes, 9, (uint)saltSize);
         Buffer.BlockCopy(salt, 0, outputBytes, 13, salt.Length);
@@ -84,7 +84,7 @@ public class PasswordHashService : IPasswordHashService
         return outputBytes;
     }
     
-    private bool VerifyHashedPassword(byte[] hashedPassword, string password)
+    private static bool VerifyHashedPassword(byte[] hashedPassword, string password)
     {
         try
         {
