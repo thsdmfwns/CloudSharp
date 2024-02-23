@@ -6,13 +6,14 @@ using FluentResults;
 
 namespace CloudSharp.Api.Service;
 
-public class MemberService(IMemberRepository memberRepository, ILogger<MemberService> _logger) : IMemberService
+public class MemberService(IMemberRepository memberRepository, IMemberRoleRepository memberRoleRepository, ILogger<MemberService> _logger) : IMemberService
 {
+    #region Login & Register
     public async ValueTask<Result<MemberDto>> Login(string id, string password)
     {
         try
         {
-            var findResult = await memberRepository.FindById(id);
+            var findResult = await memberRepository.FindByLoginId(id);
             if (findResult.IsFailed)
             {
                 return Result.Fail("member is null");
@@ -24,7 +25,7 @@ public class MemberService(IMemberRepository memberRepository, ILogger<MemberSer
                 return Result.Fail("bad password");
             }
         
-            return (MemberDto)findResult.Value;
+            return findResult.Value.ToMemberDto();
         }
         catch (Exception e)
         {
@@ -38,31 +39,56 @@ public class MemberService(IMemberRepository memberRepository, ILogger<MemberSer
         try
         {
             //parameter check
-            var member = await memberRepository.FindById(id);
+            var member = await memberRepository.FindByLoginId(id);
             if (member.IsSuccess)
             {
                 return Result.Fail("id exist");
             }
 
-            if (!new EmailAddressAttribute().IsValid(email))
-            {
-                return Result.Fail("bad email");
-            }
-
+            var memberId = Guid.NewGuid();
             var hashedPassword = PasswordHasher.HashPassword(password);
-            var insertResult = await memberRepository.InsertMember(id, hashedPassword, role, email, nickname, profileUrl);
+            var insertResult = await memberRepository.InsertMember(memberId, id, hashedPassword, role, email, nickname, profileUrl);
             if (insertResult.IsFailed)
             {
                 return Result.Fail(insertResult.Errors);
             }
             
-            var findResult = await memberRepository.FindByIdx(insertResult.Value);
-            if (findResult.IsFailed)
+            return insertResult.Value.ToMemberDto();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "failed by Exception");
+            return Result.Fail(new Error("failed by exception").CausedBy(e));
+        }
+    }
+    #endregion
+
+    #region Update
+
+    public async ValueTask<Result<MemberDto>> UpdateRole(Guid id, ulong roleId)
+    {
+        try
+        {
+            var memberFindResult = await memberRepository.FindByMemberId(id);
+            if (memberFindResult.IsFailed)
             {
-                return Result.Fail(findResult.Errors);
+                return Result.Fail(memberFindResult.Errors);
+            }
+
+            var roleFindResult = await memberRoleRepository.FindById(roleId);
+            if (roleFindResult.IsFailed)
+            {
+                return Result.Fail(roleFindResult.Errors);
+            }
+
+            var updateResult = await memberRepository.UpdateRole(id, roleId);
+            if (updateResult.IsFailed)
+            {
+                return Result.Fail(updateResult.Errors);
             }
             
-            return (MemberDto)findResult.Value;
+            return updateResult.Value.ToMemberDto();
+
         }
         catch (Exception e)
         {
@@ -71,42 +97,40 @@ public class MemberService(IMemberRepository memberRepository, ILogger<MemberSer
         }
     }
 
-    public ValueTask<Result<MemberDto>> UpdateRole(ulong idx, ulong role)
+    public ValueTask<Result<MemberDto>> UpdateEmail(Guid id, string email)
     {
         throw new NotImplementedException();
     }
 
-    public ValueTask<Result<MemberDto>> UpdateEmail(ulong idx, string email)
+    public ValueTask<Result<MemberDto>> UpdateNickname(Guid id, string nickname)
     {
         throw new NotImplementedException();
     }
 
-    public ValueTask<Result<MemberDto>> UpdateNickname(ulong idx, string nickname)
+    public ValueTask<Result<MemberDto>> UpdatePassword(Guid id, string password)
     {
         throw new NotImplementedException();
     }
 
-    public ValueTask<Result<MemberDto>> UpdatePassword(ulong idx, string password)
+    public ValueTask<Result<MemberDto>> UpdateProfileUrl(Guid id, string profileUrl)
     {
         throw new NotImplementedException();
     }
 
-    public ValueTask<Result<MemberDto>> UpdateProfileUrl(ulong idx, string profileUrl)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async ValueTask<Result<MemberDto>> FindByIdx(ulong idx)
+    #endregion
+    
+    #region Find
+    public async ValueTask<Result<MemberDto>> FindByMemberId(Guid id)
     {
         try
         {
-            var findResult = await memberRepository.FindByIdx(idx);
+            var findResult = await memberRepository.FindByMemberId(id);
             if (findResult.IsFailed)
             {
                 return Result.Fail("member is null");
             }
 
-            return (MemberDto)findResult.Value;
+            return findResult.Value.ToMemberDto();
         }
         catch (Exception e)
         {
@@ -115,17 +139,17 @@ public class MemberService(IMemberRepository memberRepository, ILogger<MemberSer
         }
     }
 
-    public async ValueTask<Result<MemberDto>> FindById(string id)
+    public async ValueTask<Result<MemberDto>> FindByLoginId(string id)
     {
         try
         {
-            var findResult = await memberRepository.FindById(id);
+            var findResult = await memberRepository.FindByLoginId(id);
             if (findResult.IsFailed)
             {
                 return Result.Fail("member is null");
             }
 
-            return (MemberDto)findResult.Value;
+            return findResult.Value.ToMemberDto();
         }
         catch (Exception e)
         {
@@ -134,11 +158,12 @@ public class MemberService(IMemberRepository memberRepository, ILogger<MemberSer
         }
     }
 
-    public ValueTask<Result<MemberDto>> FindByDirectory(Guid directory)
-    {
-        throw new NotImplementedException();
-    }
+    
 
+    #endregion
+
+
+    
     public ValueTask<Result> DeleteMember(ulong idx, string password)
     {
         throw new NotImplementedException();
