@@ -24,6 +24,7 @@ public interface IMemberService
 
     public ValueTask<Result<MemberDto>> FindByIdx(ulong idx);
     public ValueTask<Result<MemberDto>> FindById(string id);
+    public ValueTask<Result<MemberDto>> FindByDirectory(Guid directory);
 
     public ValueTask<Result> DeleteMember(ulong idx, string password);
 }
