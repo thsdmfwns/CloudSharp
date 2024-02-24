@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using CloudSharp.Api.Error;
 using CloudSharp.Api.Repository;
 using CloudSharp.Api.Util;
 using CloudSharp.Share.DTO;
@@ -16,13 +17,13 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
             var findResult = await memberRepository.FindByLoginId(id);
             if (findResult.IsFailed)
             {
-                return Result.Fail("member is null");
+                return Result.Fail(new UnauthorizedError("member not found"));
             }
             var expectedPasswordHash = findResult.Value.Password;
             var passwordVerifyResult = PasswordHasher.VerifyHashedPassword(expectedPasswordHash, password);
             if (passwordVerifyResult.IsFailed)
             {
-                return Result.Fail("bad password");
+                return Result.Fail(new UnauthorizedError("bad password"));
             }
         
             return findResult.Value.ToMemberDto();
@@ -30,7 +31,7 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
         catch (Exception e)
         {
             _logger.LogError(e, "Login failed by Exception");
-            return Result.Fail(new Error("failed by exception").CausedBy(e));
+            return Result.Fail(new InternalServerError("failed by exception").CausedBy(e));
         }
     }
 
@@ -42,7 +43,7 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
             var member = await memberRepository.FindByLoginId(id);
             if (member.IsSuccess)
             {
-                return Result.Fail("id exist");
+                return Result.Fail(new ConflictError("id exist"));
             }
 
             var memberId = Guid.NewGuid();
@@ -58,7 +59,7 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
         catch (Exception e)
         {
             _logger.LogError(e, "failed by Exception");
-            return Result.Fail(new Error("failed by exception").CausedBy(e));
+            return Result.Fail(new InternalServerError("failed by exception").CausedBy(e));
         }
     }
     #endregion
@@ -72,13 +73,13 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
             var memberFindResult = await memberRepository.FindByMemberId(id);
             if (memberFindResult.IsFailed)
             {
-                return Result.Fail(memberFindResult.Errors);
+                return Result.Fail(new NotFoundError("member not found"));
             }
 
             var roleFindResult = await memberRoleRepository.FindById(roleId);
             if (roleFindResult.IsFailed)
             {
-                return Result.Fail(roleFindResult.Errors);
+                return Result.Fail(new NotFoundError("role not found"));
             }
 
             var updateResult = await memberRepository.UpdateRole(id, roleId);
@@ -93,7 +94,7 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
         catch (Exception e)
         {
             _logger.LogError(e, "failed by Exception");
-            return Result.Fail(new Error("failed by exception").CausedBy(e));
+            return Result.Fail(new InternalServerError("failed by exception").CausedBy(e));
         }
     }
 
@@ -127,7 +128,7 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
             var findResult = await memberRepository.FindByMemberId(id);
             if (findResult.IsFailed)
             {
-                return Result.Fail("member is null");
+                return Result.Fail(new NotFoundError("member not found"));
             }
 
             return findResult.Value.ToMemberDto();
@@ -135,7 +136,7 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
         catch (Exception e)
         {
             _logger.LogError(e, "failed by Exception");
-            return Result.Fail(new Error("failed by exception").CausedBy(e));   
+            return Result.Fail(new InternalServerError("failed by exception").CausedBy(e));   
         }
     }
 
@@ -146,7 +147,7 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
             var findResult = await memberRepository.FindByLoginId(id);
             if (findResult.IsFailed)
             {
-                return Result.Fail("member is null");
+                return Result.Fail(new NotFoundError("member not found"));
             }
 
             return findResult.Value.ToMemberDto();
@@ -154,7 +155,7 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
         catch (Exception e)
         {
             _logger.LogError(e, "failed by Exception");
-            return Result.Fail(new Error("failed by exception").CausedBy(e));   
+            return Result.Fail(new InternalServerError("failed by exception").CausedBy(e));   
         }
     }
 
