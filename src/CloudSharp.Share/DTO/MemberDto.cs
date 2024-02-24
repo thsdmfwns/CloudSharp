@@ -1,10 +1,19 @@
+using System.Text.Json.Serialization;
+
 namespace CloudSharp.Share.DTO;
 
-public class MemberDto
+public record MemberDto
 {
-    public required string MemberId { get; set; }
-    public required ulong RoleId { get; set; }
-    public required string Email { get; set; }
-    public required string Nickname { get; set; }
-    public string? ProfileImageURL { get; set; }
+    [JsonPropertyName("mid")]
+    public required string MemberId { get; init; }
+    [JsonPropertyName("lid")]
+    public required string LoginId { get; init; }
+    [JsonPropertyName("role")]
+    public required ulong RoleId { get; init; }
+    [JsonPropertyName("email")]
+    public required string Email { get; init; }
+    [JsonPropertyName("nick")]
+    public required string Nickname { get; init; }
+    [JsonPropertyName("pid")]
+    public string? ProfileImageId { get; init; }
 }

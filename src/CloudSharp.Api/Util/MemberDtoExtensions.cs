@@ -10,9 +10,10 @@ public static class MemberDtoExtensions
         return new MemberDto
         {
             MemberId = member.MemberId.ToString(),
+            LoginId = member.LoginId,
             Email = member.Email,
             Nickname = member.Nickname,
-            ProfileImageURL = member.ProfileImageURL,
+            ProfileImageId = member.ProfileImageId.ToString(),
             RoleId = member.Role.Id
         };
     }
