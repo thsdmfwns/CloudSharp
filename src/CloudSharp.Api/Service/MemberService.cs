@@ -4,6 +4,7 @@ using CloudSharp.Api.Repository;
 using CloudSharp.Api.Util;
 using CloudSharp.Share.DTO;
 using FluentResults;
+using Exception = System.Exception;
 
 namespace CloudSharp.Api.Service;
 
@@ -30,7 +31,32 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Login failed by Exception");
+            _logger.LogError(e, "failed by Exception");
+            return Result.Fail(new InternalServerError("failed by exception").CausedBy(e));
+        }
+    }
+    
+    private async ValueTask<Result<MemberDto>> LoginByMemberId(Guid id, string password)
+    {
+        try
+        {
+            var findResult = await memberRepository.FindByMemberId(id);
+            if (findResult.IsFailed)
+            {
+                return Result.Fail(new UnauthorizedError("member not found"));
+            }
+            var expectedPasswordHash = findResult.Value.Password;
+            var passwordVerifyResult = PasswordHasher.VerifyHashedPassword(expectedPasswordHash, password);
+            if (passwordVerifyResult.IsFailed)
+            {
+                return Result.Fail(new UnauthorizedError("bad password"));
+            }
+        
+            return findResult.Value.ToMemberDto();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "failed by Exception");
             return Result.Fail(new InternalServerError("failed by exception").CausedBy(e));
         }
     }
@@ -98,24 +124,106 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
         }
     }
 
-    public ValueTask<Result<MemberDto>> UpdateEmail(Guid id, string email)
+    public async ValueTask<Result<MemberDto>> UpdateEmail(Guid id, string email)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var memberFindResult = await memberRepository.FindByMemberId(id);
+            if (memberFindResult.IsFailed)
+            {
+                return Result.Fail(new NotFoundError("member not found"));
+            }
+
+            var updateResult = await memberRepository.UpdateEmail(id, email);
+            if (updateResult.IsFailed)
+            {
+                return Result.Fail(updateResult.Errors);
+            }
+
+            return updateResult.Value.ToMemberDto();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "failed by Exception");
+            return Result.Fail(new InternalServerError("failed by exception").CausedBy(e));
+        }
+        
     }
 
-    public ValueTask<Result<MemberDto>> UpdateNickname(Guid id, string nickname)
+    public async ValueTask<Result<MemberDto>> UpdateNickname(Guid id, string nickname)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var memberFindResult = await memberRepository.FindByMemberId(id);
+            if (memberFindResult.IsFailed)
+            {
+                return Result.Fail(new NotFoundError("member not found"));
+            }
+
+            var updateResult = await memberRepository.UpdateNickname(id, nickname);
+            if (updateResult.IsFailed)
+            {
+                return Result.Fail(updateResult.Errors);
+            }
+
+            return updateResult.Value.ToMemberDto();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "failed by Exception");
+            return Result.Fail(new InternalServerError("failed by exception").CausedBy(e));
+        }
     }
 
-    public ValueTask<Result<MemberDto>> UpdatePassword(Guid id, string password)
+    public async ValueTask<Result<MemberDto>> UpdatePassword(Guid id, string password, string updatePassword)
     {
-        throw new NotImplementedException();
+        try
+        {
+            //todo login in controller?
+            var loginResult = await LoginByMemberId(id, password);
+            if (loginResult.IsFailed)
+            {
+                return Result.Fail(loginResult.Errors);
+            }
+
+            var updateResult = await memberRepository.UpdatePassword(id, updatePassword);
+            if (updateResult.IsFailed)
+            {
+                return Result.Fail(updateResult.Errors);
+            }
+
+            return updateResult.Value.ToMemberDto();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "failed by Exception");
+            return Result.Fail(new InternalServerError("failed by exception").CausedBy(e));
+        }
     }
 
-    public ValueTask<Result<MemberDto>> UpdateProfileUrl(Guid id, string profileUrl)
+    public async ValueTask<Result<MemberDto>> UpdateProfileUrl(Guid id, Guid profileImageId)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var memberFindResult = await memberRepository.FindByMemberId(id);
+            if (memberFindResult.IsFailed)
+            {
+                return Result.Fail(new NotFoundError("member not found"));
+            }
+
+            var updateResult = await memberRepository.UpdateProfileId(id, profileImageId);
+            if (updateResult.IsFailed)
+            {
+                return Result.Fail(updateResult.Errors);
+            }
+            
+            return updateResult.Value.ToMemberDto();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "failed by Exception");
+            return Result.Fail(new InternalServerError("failed by exception").CausedBy(e));
+        }
     }
 
     #endregion
@@ -165,8 +273,23 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
 
 
     
-    public ValueTask<Result> DeleteMember(ulong idx, string password)
+    public async ValueTask<Result> DeleteMember(Guid id, string password)
     {
-        throw new NotImplementedException();
+        try
+        {
+            //todo login in controller?
+            var loginResult = await LoginByMemberId(id, password);
+            if (loginResult.IsFailed)
+            {
+                return Result.Fail(loginResult.Errors);
+            }
+
+            return await memberRepository.DeleteMember(id);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "failed by Exception");
+            return Result.Fail(new InternalServerError("failed by exception").CausedBy(e));   
+        }
     }
 }
