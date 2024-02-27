@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using CloudSharp.Api.Entities;
 using CloudSharp.Api.Error;
 using CloudSharp.Api.Repository;
 using CloudSharp.Api.Util;
@@ -18,13 +19,15 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
             var findResult = await memberRepository.FindByLoginId(id);
             if (findResult.IsFailed)
             {
-                return Result.Fail(new UnauthorizedError("member not found"));
+                var err = findResult.Errors.First();
+                return Result.Fail(new UnauthorizedError(err.Message));
             }
             var expectedPasswordHash = findResult.Value.Password;
             var passwordVerifyResult = PasswordHasher.VerifyHashedPassword(expectedPasswordHash, password);
             if (passwordVerifyResult.IsFailed)
             {
-                return Result.Fail(new UnauthorizedError("bad password"));
+                var err = passwordVerifyResult.Errors.First();
+                return Result.Fail(new UnauthorizedError(err.Message));
             }
         
             return findResult.Value.ToMemberDto();
@@ -35,7 +38,7 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
             return Result.Fail(new InternalServerError("failed by exception").CausedBy(e));
         }
     }
-    
+
     private async ValueTask<Result<MemberDto>> LoginByMemberId(Guid id, string password)
     {
         try
@@ -43,13 +46,15 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
             var findResult = await memberRepository.FindByMemberId(id);
             if (findResult.IsFailed)
             {
-                return Result.Fail(new UnauthorizedError("member not found"));
+                var err = findResult.Errors.First();
+                return Result.Fail(new UnauthorizedError(err.Message));
             }
             var expectedPasswordHash = findResult.Value.Password;
             var passwordVerifyResult = PasswordHasher.VerifyHashedPassword(expectedPasswordHash, password);
             if (passwordVerifyResult.IsFailed)
             {
-                return Result.Fail(new UnauthorizedError("bad password"));
+                var err = passwordVerifyResult.Errors.First();
+                return Result.Fail(new UnauthorizedError(err.Message));
             }
         
             return findResult.Value.ToMemberDto();
@@ -61,23 +66,30 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
         }
     }
 
-    public async ValueTask<Result<MemberDto>> Register(string id, string password, ulong role, string email, string nickname, string? profileUrl)
+    public async ValueTask<Result<MemberDto>> Register(string id, string password, ulong role, string email, string nickname, Guid? profileUrl)
     {
         try
         {
-            //parameter check
-            var member = await memberRepository.FindByLoginId(id);
-            if (member.IsSuccess)
+            var findMemberResult = await memberRepository.FindByLoginId(id);
+            if (findMemberResult.IsSuccess)
             {
                 return Result.Fail(new ConflictError("id exist"));
             }
 
+            var findRoleResult = await memberRoleRepository.FindById(role);
+            if (findRoleResult.IsFailed)
+            {
+                var err = findRoleResult.Errors.First();
+                return Result.Fail(new NotFoundError(err.Message));
+            }
+
             var memberId = Guid.NewGuid();
             var hashedPassword = PasswordHasher.HashPassword(password);
-            var insertResult = await memberRepository.InsertMember(memberId, id, hashedPassword, role, email, nickname, profileUrl);
+            var insertResult = await memberRepository.InsertMember(memberId, id, hashedPassword, findRoleResult.Value, email, nickname, profileUrl);
             if (insertResult.IsFailed)
             {
-                return Result.Fail(insertResult.Errors);
+                var err = findRoleResult.Errors.First();
+                return Result.Fail(err.Message);
             }
             
             return insertResult.Value.ToMemberDto();
@@ -92,23 +104,12 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
 
     #region Update
 
-    public async ValueTask<Result> UpdateRole(Guid id, ulong roleId)
+    public async ValueTask<Result> UpdateRole(Guid id, MemberRole role)
     {
         try
         {
-            var memberFindResult = await memberRepository.FindByMemberId(id);
-            if (memberFindResult.IsFailed)
-            {
-                return Result.Fail(new NotFoundError("member not found"));
-            }
-
-            var roleFindResult = await memberRoleRepository.FindById(roleId);
-            if (roleFindResult.IsFailed)
-            {
-                return Result.Fail(new NotFoundError("role not found"));
-            }
-
-            return await memberRepository.UpdateRole(id, roleId);
+            var updateResult = await memberRepository.UpdateRole(id, role);
+            return Result.OkIf(updateResult.IsSuccess, new NotFoundError(updateResult.Errors.First().Message));
         }
         catch (Exception e)
         {
@@ -121,13 +122,8 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
     {
         try
         {
-            var memberFindResult = await memberRepository.FindByMemberId(id);
-            if (memberFindResult.IsFailed)
-            {
-                return Result.Fail(new NotFoundError("member not found"));
-            }
-
-            return await memberRepository.UpdateEmail(id, email);
+            var updateResult = await memberRepository.UpdateEmail(id, email);
+            return Result.OkIf(updateResult.IsSuccess, new NotFoundError(updateResult.Errors.First().Message));
         }
         catch (Exception e)
         {
@@ -141,13 +137,8 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
     {
         try
         {
-            var memberFindResult = await memberRepository.FindByMemberId(id);
-            if (memberFindResult.IsFailed)
-            {
-                return Result.Fail(new NotFoundError("member not found"));
-            }
-
-            return await memberRepository.UpdateNickname(id, nickname);
+            var updateResult = await memberRepository.UpdateNickname(id, nickname);
+            return Result.OkIf(updateResult.IsSuccess, new NotFoundError(updateResult.Errors.First().Message));
         }
         catch (Exception e)
         {
@@ -156,18 +147,12 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
         }
     }
 
-    public async ValueTask<Result> UpdatePassword(Guid id, string password, string updatePassword)
+    public async ValueTask<Result> UpdatePassword(Guid id, string updatePassword)
     {
         try
         {
-            //todo login in controller?
-            var loginResult = await LoginByMemberId(id, password);
-            if (loginResult.IsFailed)
-            {
-                return Result.Fail(loginResult.Errors);
-            }
-
-            return await memberRepository.UpdatePassword(id, updatePassword);
+            var updateResult = await memberRepository.UpdatePassword(id, updatePassword);
+            return Result.OkIf(updateResult.IsSuccess, new NotFoundError(updateResult.Errors.First().Message));
         }
         catch (Exception e)
         {
@@ -180,13 +165,9 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
     {
         try
         {
-            var memberFindResult = await memberRepository.FindByMemberId(id);
-            if (memberFindResult.IsFailed)
-            {
-                return Result.Fail(new NotFoundError("member not found"));
-            }
-            
-            return await memberRepository.UpdateProfileId(id, profileImageId);
+            //todo check file exist
+            var updateResult = await memberRepository.UpdateProfileId(id, profileImageId);
+            return Result.OkIf(updateResult.IsSuccess, new NotFoundError(updateResult.Errors.First().Message));
         }
         catch (Exception e)
         {
@@ -205,7 +186,8 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
             var findResult = await memberRepository.FindByMemberId(id);
             if (findResult.IsFailed)
             {
-                return Result.Fail(new NotFoundError("member not found"));
+                var err = findResult.Errors.First();
+                return Result.Fail(new NotFoundError(err.Message));
             }
 
             return findResult.Value.ToMemberDto();
@@ -224,7 +206,8 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
             var findResult = await memberRepository.FindByLoginId(id);
             if (findResult.IsFailed)
             {
-                return Result.Fail(new NotFoundError("member not found"));
+                var err = findResult.Errors.First();
+                return Result.Fail(new NotFoundError(err.Message));
             }
 
             return findResult.Value.ToMemberDto();
@@ -242,18 +225,12 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
 
 
     
-    public async ValueTask<Result> DeleteMember(Guid id, string password)
+    public async ValueTask<Result> DeleteMember(Guid id)
     {
         try
         {
-            //todo login in controller?
-            var loginResult = await LoginByMemberId(id, password);
-            if (loginResult.IsFailed)
-            {
-                return Result.Fail(loginResult.Errors);
-            }
-
-            return await memberRepository.DeleteMember(id);
+            var deleteMemberResult = await memberRepository.DeleteMember(id);
+            return Result.OkIf(deleteMemberResult.IsSuccess, new NotFoundError(deleteMemberResult.Errors.First().Message));
         }
         catch (Exception e)
         {
