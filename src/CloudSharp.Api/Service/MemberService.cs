@@ -92,7 +92,7 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
 
     #region Update
 
-    public async ValueTask<Result<MemberDto>> UpdateRole(Guid id, ulong roleId)
+    public async ValueTask<Result> UpdateRole(Guid id, ulong roleId)
     {
         try
         {
@@ -108,14 +108,7 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
                 return Result.Fail(new NotFoundError("role not found"));
             }
 
-            var updateResult = await memberRepository.UpdateRole(id, roleId);
-            if (updateResult.IsFailed)
-            {
-                return Result.Fail(updateResult.Errors);
-            }
-            
-            return updateResult.Value.ToMemberDto();
-
+            return await memberRepository.UpdateRole(id, roleId);
         }
         catch (Exception e)
         {
@@ -124,7 +117,7 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
         }
     }
 
-    public async ValueTask<Result<MemberDto>> UpdateEmail(Guid id, string email)
+    public async ValueTask<Result> UpdateEmail(Guid id, string email)
     {
         try
         {
@@ -134,13 +127,7 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
                 return Result.Fail(new NotFoundError("member not found"));
             }
 
-            var updateResult = await memberRepository.UpdateEmail(id, email);
-            if (updateResult.IsFailed)
-            {
-                return Result.Fail(updateResult.Errors);
-            }
-
-            return updateResult.Value.ToMemberDto();
+            return await memberRepository.UpdateEmail(id, email);
         }
         catch (Exception e)
         {
@@ -150,7 +137,7 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
         
     }
 
-    public async ValueTask<Result<MemberDto>> UpdateNickname(Guid id, string nickname)
+    public async ValueTask<Result> UpdateNickname(Guid id, string nickname)
     {
         try
         {
@@ -160,13 +147,7 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
                 return Result.Fail(new NotFoundError("member not found"));
             }
 
-            var updateResult = await memberRepository.UpdateNickname(id, nickname);
-            if (updateResult.IsFailed)
-            {
-                return Result.Fail(updateResult.Errors);
-            }
-
-            return updateResult.Value.ToMemberDto();
+            return await memberRepository.UpdateNickname(id, nickname);
         }
         catch (Exception e)
         {
@@ -175,7 +156,7 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
         }
     }
 
-    public async ValueTask<Result<MemberDto>> UpdatePassword(Guid id, string password, string updatePassword)
+    public async ValueTask<Result> UpdatePassword(Guid id, string password, string updatePassword)
     {
         try
         {
@@ -186,13 +167,7 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
                 return Result.Fail(loginResult.Errors);
             }
 
-            var updateResult = await memberRepository.UpdatePassword(id, updatePassword);
-            if (updateResult.IsFailed)
-            {
-                return Result.Fail(updateResult.Errors);
-            }
-
-            return updateResult.Value.ToMemberDto();
+            return await memberRepository.UpdatePassword(id, updatePassword);
         }
         catch (Exception e)
         {
@@ -201,7 +176,7 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
         }
     }
 
-    public async ValueTask<Result<MemberDto>> UpdateProfileUrl(Guid id, Guid profileImageId)
+    public async ValueTask<Result> UpdateProfileUrl(Guid id, Guid profileImageId)
     {
         try
         {
@@ -210,14 +185,8 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
             {
                 return Result.Fail(new NotFoundError("member not found"));
             }
-
-            var updateResult = await memberRepository.UpdateProfileId(id, profileImageId);
-            if (updateResult.IsFailed)
-            {
-                return Result.Fail(updateResult.Errors);
-            }
             
-            return updateResult.Value.ToMemberDto();
+            return await memberRepository.UpdateProfileId(id, profileImageId);
         }
         catch (Exception e)
         {

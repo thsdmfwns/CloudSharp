@@ -16,13 +16,13 @@ public interface IMemberService
         string? profileUrl
     );
 
-    public ValueTask<Result<MemberDto>> UpdateRole(Guid idx, ulong roleId);
-    public ValueTask<Result<MemberDto>> UpdateEmail(Guid idx, string email);
-    public ValueTask<Result<MemberDto>> UpdateNickname(Guid idx, string nickname);
-    public ValueTask<Result<MemberDto>> UpdatePassword(Guid idx, string password, string updatePassword);
-    public ValueTask<Result<MemberDto>> UpdateProfileUrl(Guid idx, Guid profileImageId);
+    public ValueTask<Result> UpdateRole(Guid id, ulong roleId);
+    public ValueTask<Result> UpdateEmail(Guid id, string email);
+    public ValueTask<Result> UpdateNickname(Guid id, string nickname);
+    public ValueTask<Result> UpdatePassword(Guid id, string password, string updatePassword);
+    public ValueTask<Result> UpdateProfileUrl(Guid id, Guid profileImageId);
 
-    public ValueTask<Result<MemberDto>> FindByMemberId(Guid idx);
+    public ValueTask<Result<MemberDto>> FindByMemberId(Guid id);
     public ValueTask<Result<MemberDto>> FindByLoginId(string id);
 
     public ValueTask<Result> DeleteMember(Guid id, string password);
