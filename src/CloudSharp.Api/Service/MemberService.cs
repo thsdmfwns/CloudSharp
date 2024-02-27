@@ -62,7 +62,7 @@ public class MemberService(IMemberRepository memberRepository, ILogger<MemberSer
         }
     }
 
-    public async ValueTask<Result<MemberDto>> Register(string id, string password, ulong role, string email, string nickname, Guid? profileUrl)
+    public async ValueTask<Result<MemberDto>> Register(string id, string password, MemberRole role, string email, string nickname, Guid? profileUrl)
     {
         try
         {
@@ -71,10 +71,21 @@ public class MemberService(IMemberRepository memberRepository, ILogger<MemberSer
             {
                 return Result.Fail(new ConflictError().CausedBy("id exist"));
             }
-            //todo make Member in Service
+            
             var memberId = Guid.NewGuid();
             var hashedPassword = PasswordHasher.HashPassword(password);
-            var insertResult = await memberRepository.InsertMember(memberId, id, hashedPassword, role, email, nickname, profileUrl);
+            var member = new Member
+            {
+                MemberId = memberId,
+                LoginId = id,
+                Password = hashedPassword,
+                Role = role,
+                Email = email,
+                Nickname = nickname,
+                ProfileImageId = profileUrl
+            };
+            
+            var insertResult = await memberRepository.InsertMember(member);
             if (insertResult.IsFailed)
             {
                 return Result.Fail(new ConflictError().CausedBy(insertResult.Errors));

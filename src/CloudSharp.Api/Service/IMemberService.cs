@@ -10,7 +10,7 @@ public interface IMemberService
 
     public ValueTask<Result<MemberDto>> Register(string id,
         string password,
-        ulong role,
+        MemberRole role,
         string email,
         string nickname,
         Guid? profileUrl);

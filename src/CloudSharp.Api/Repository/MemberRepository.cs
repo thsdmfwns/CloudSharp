@@ -22,19 +22,8 @@ public class MemberRepository(DatabaseContext context) : IMemberRepository
         return Result.OkIf(await changed > 0, "member not found");
     }
 
-    public async ValueTask<Result<Member>> InsertMember(Guid memberId, string loginId, string hashedPassword, MemberRole role, string email,
-        string nickname, Guid? profileUrl)
+    public async ValueTask<Result<Member>> InsertMember(Member member)
     {
-        var member = new Member
-        {
-            MemberId = memberId,
-            LoginId = loginId,
-            Password = hashedPassword,
-            Role = role,
-            Email = email,
-            Nickname = nickname,
-            ProfileImageId = profileUrl
-        };
         await context.Members.AddAsync(member);
         await context.SaveChangesAsync();
         return member;

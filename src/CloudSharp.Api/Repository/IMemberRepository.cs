@@ -7,9 +7,7 @@ public interface IMemberRepository
 {
     public ValueTask<Result<Member>> FindByLoginId(string id);
     public ValueTask<Result> UpdateLastAccessed(Guid id);
-    public ValueTask<Result<Member>> InsertMember(Guid memberId, string loginId, string hashedPassword, MemberRole role,
-        string email, string nickname,
-        Guid? profileUrl);
+    public ValueTask<Result<Member>> InsertMember(Member member);
     public ValueTask<Result<Member>> FindByMemberId(Guid idx);
     public ValueTask<Result> UpdateRole(Guid id, MemberRole role);
     public ValueTask<Result> UpdateEmail(Guid id, string email);
