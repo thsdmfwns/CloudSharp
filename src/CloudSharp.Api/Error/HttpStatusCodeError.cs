@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CloudSharp.Api.Error;
 
-public abstract class HttpStatusCodeError(string message) : FluentResults.Error(message)
+public abstract class HttpStatusCodeError : FluentResults.Error
 {
     protected abstract int HttpStatusCode { get; }
 

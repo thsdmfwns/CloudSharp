@@ -1,6 +1,6 @@
 namespace CloudSharp.Api.Error;
 
-public class ForbiddenError(string message) : HttpStatusCodeError(message)
+public class ForbiddenError : HttpStatusCodeError
 {
     protected override int HttpStatusCode => 403;
 }

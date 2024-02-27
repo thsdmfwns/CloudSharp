@@ -1,6 +1,6 @@
 namespace CloudSharp.Api.Error;
 
-public class ConflictError(string message) : HttpStatusCodeError(message)
+public class ConflictError : HttpStatusCodeError
 {
     protected override int HttpStatusCode => 409;
 }

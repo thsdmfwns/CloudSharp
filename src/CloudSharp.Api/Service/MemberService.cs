@@ -9,7 +9,7 @@ using Exception = System.Exception;
 
 namespace CloudSharp.Api.Service;
 
-public class MemberService(IMemberRepository memberRepository, IMemberRoleRepository memberRoleRepository, ILogger<MemberService> _logger) : IMemberService
+public class MemberService(IMemberRepository memberRepository, ILogger<MemberService> _logger) : IMemberService
 {
     #region Login & Register
     public async ValueTask<Result<MemberDto>> Login(string id, string password)
@@ -19,15 +19,13 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
             var findResult = await memberRepository.FindByLoginId(id);
             if (findResult.IsFailed)
             {
-                var err = findResult.Errors.First();
-                return Result.Fail(new UnauthorizedError(err.Message));
+                return Result.Fail(new UnauthorizedError().CausedBy(findResult.Errors));
             }
             var expectedPasswordHash = findResult.Value.Password;
             var passwordVerifyResult = PasswordHasher.VerifyHashedPassword(expectedPasswordHash, password);
             if (passwordVerifyResult.IsFailed)
             {
-                var err = passwordVerifyResult.Errors.First();
-                return Result.Fail(new UnauthorizedError(err.Message));
+                return Result.Fail(new UnauthorizedError().CausedBy(passwordVerifyResult.Errors));
             }
         
             return findResult.Value.ToMemberDto();
@@ -35,7 +33,7 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
         catch (Exception e)
         {
             _logger.LogError(e, "failed by Exception");
-            return Result.Fail(new InternalServerError("failed by exception").CausedBy(e));
+            return Result.Fail(new InternalServerError().CausedBy(e));
         }
     }
 
@@ -46,15 +44,13 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
             var findResult = await memberRepository.FindByMemberId(id);
             if (findResult.IsFailed)
             {
-                var err = findResult.Errors.First();
-                return Result.Fail(new UnauthorizedError(err.Message));
+                return Result.Fail(new UnauthorizedError().CausedBy(findResult.Errors));
             }
             var expectedPasswordHash = findResult.Value.Password;
             var passwordVerifyResult = PasswordHasher.VerifyHashedPassword(expectedPasswordHash, password);
             if (passwordVerifyResult.IsFailed)
             {
-                var err = passwordVerifyResult.Errors.First();
-                return Result.Fail(new UnauthorizedError(err.Message));
+                return Result.Fail(new UnauthorizedError().CausedBy(passwordVerifyResult.Errors));
             }
         
             return findResult.Value.ToMemberDto();
@@ -62,7 +58,7 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
         catch (Exception e)
         {
             _logger.LogError(e, "failed by Exception");
-            return Result.Fail(new InternalServerError("failed by exception").CausedBy(e));
+            return Result.Fail(new InternalServerError().CausedBy(e));
         }
     }
 
@@ -73,23 +69,15 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
             var findMemberResult = await memberRepository.FindByLoginId(id);
             if (findMemberResult.IsSuccess)
             {
-                return Result.Fail(new ConflictError("id exist"));
+                return Result.Fail(new ConflictError().CausedBy("id exist"));
             }
-
-            var findRoleResult = await memberRoleRepository.FindById(role);
-            if (findRoleResult.IsFailed)
-            {
-                var err = findRoleResult.Errors.First();
-                return Result.Fail(new NotFoundError(err.Message));
-            }
-
+            //todo make Member in Service
             var memberId = Guid.NewGuid();
             var hashedPassword = PasswordHasher.HashPassword(password);
-            var insertResult = await memberRepository.InsertMember(memberId, id, hashedPassword, findRoleResult.Value, email, nickname, profileUrl);
+            var insertResult = await memberRepository.InsertMember(memberId, id, hashedPassword, role, email, nickname, profileUrl);
             if (insertResult.IsFailed)
             {
-                var err = findRoleResult.Errors.First();
-                return Result.Fail(err.Message);
+                return Result.Fail(new ConflictError().CausedBy(insertResult.Errors));
             }
             
             return insertResult.Value.ToMemberDto();
@@ -97,7 +85,7 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
         catch (Exception e)
         {
             _logger.LogError(e, "failed by Exception");
-            return Result.Fail(new InternalServerError("failed by exception").CausedBy(e));
+            return Result.Fail(new InternalServerError().CausedBy(e));
         }
     }
     #endregion
@@ -109,12 +97,12 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
         try
         {
             var updateResult = await memberRepository.UpdateRole(id, role);
-            return Result.OkIf(updateResult.IsSuccess, new NotFoundError(updateResult.Errors.First().Message));
+            return Result.OkIf(updateResult.IsSuccess, new NotFoundError().CausedBy(updateResult.Errors));
         }
         catch (Exception e)
         {
             _logger.LogError(e, "failed by Exception");
-            return Result.Fail(new InternalServerError("failed by exception").CausedBy(e));
+            return Result.Fail(new InternalServerError().CausedBy(e));
         }
     }
 
@@ -123,12 +111,12 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
         try
         {
             var updateResult = await memberRepository.UpdateEmail(id, email);
-            return Result.OkIf(updateResult.IsSuccess, new NotFoundError(updateResult.Errors.First().Message));
+            return Result.OkIf(updateResult.IsSuccess, new NotFoundError().CausedBy(updateResult.Errors));
         }
         catch (Exception e)
         {
             _logger.LogError(e, "failed by Exception");
-            return Result.Fail(new InternalServerError("failed by exception").CausedBy(e));
+            return Result.Fail(new InternalServerError().CausedBy(e));
         }
         
     }
@@ -138,26 +126,27 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
         try
         {
             var updateResult = await memberRepository.UpdateNickname(id, nickname);
-            return Result.OkIf(updateResult.IsSuccess, new NotFoundError(updateResult.Errors.First().Message));
+            return Result.OkIf(updateResult.IsSuccess, new NotFoundError().CausedBy(updateResult.Errors));
         }
         catch (Exception e)
         {
             _logger.LogError(e, "failed by Exception");
-            return Result.Fail(new InternalServerError("failed by exception").CausedBy(e));
+            return Result.Fail(new InternalServerError().CausedBy(e));
         }
     }
 
-    public async ValueTask<Result> UpdatePassword(Guid id, string updatePassword)
+    public async ValueTask<Result> UpdatePassword(Guid id, string password)
     {
         try
         {
-            var updateResult = await memberRepository.UpdatePassword(id, updatePassword);
-            return Result.OkIf(updateResult.IsSuccess, new NotFoundError(updateResult.Errors.First().Message));
+            var passwordHash = PasswordHasher.HashPassword(password);
+            var updateResult = await memberRepository.UpdatePassword(id, passwordHash);
+            return Result.OkIf(updateResult.IsSuccess, new NotFoundError().CausedBy(updateResult.Errors));
         }
         catch (Exception e)
         {
             _logger.LogError(e, "failed by Exception");
-            return Result.Fail(new InternalServerError("failed by exception").CausedBy(e));
+            return Result.Fail(new InternalServerError().CausedBy(e));
         }
     }
 
@@ -167,12 +156,12 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
         {
             //todo check file exist
             var updateResult = await memberRepository.UpdateProfileId(id, profileImageId);
-            return Result.OkIf(updateResult.IsSuccess, new NotFoundError(updateResult.Errors.First().Message));
+            return Result.OkIf(updateResult.IsSuccess, new NotFoundError().CausedBy(updateResult.Errors));
         }
         catch (Exception e)
         {
             _logger.LogError(e, "failed by Exception");
-            return Result.Fail(new InternalServerError("failed by exception").CausedBy(e));
+            return Result.Fail(new InternalServerError().CausedBy(e));
         }
     }
 
@@ -186,8 +175,7 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
             var findResult = await memberRepository.FindByMemberId(id);
             if (findResult.IsFailed)
             {
-                var err = findResult.Errors.First();
-                return Result.Fail(new NotFoundError(err.Message));
+                return Result.Fail(new NotFoundError().CausedBy(findResult.Errors));
             }
 
             return findResult.Value.ToMemberDto();
@@ -195,7 +183,7 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
         catch (Exception e)
         {
             _logger.LogError(e, "failed by Exception");
-            return Result.Fail(new InternalServerError("failed by exception").CausedBy(e));   
+            return Result.Fail(new InternalServerError().CausedBy(e));   
         }
     }
 
@@ -206,8 +194,7 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
             var findResult = await memberRepository.FindByLoginId(id);
             if (findResult.IsFailed)
             {
-                var err = findResult.Errors.First();
-                return Result.Fail(new NotFoundError(err.Message));
+                return Result.Fail(new NotFoundError().CausedBy(findResult.Errors));
             }
 
             return findResult.Value.ToMemberDto();
@@ -215,7 +202,7 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
         catch (Exception e)
         {
             _logger.LogError(e, "failed by Exception");
-            return Result.Fail(new InternalServerError("failed by exception").CausedBy(e));   
+            return Result.Fail(new InternalServerError().CausedBy(e));   
         }
     }
 
@@ -229,13 +216,13 @@ public class MemberService(IMemberRepository memberRepository, IMemberRoleReposi
     {
         try
         {
-            var deleteMemberResult = await memberRepository.DeleteMember(id);
-            return Result.OkIf(deleteMemberResult.IsSuccess, new NotFoundError(deleteMemberResult.Errors.First().Message));
+            var deleteResult = await memberRepository.DeleteMember(id);
+            return Result.OkIf(deleteResult.IsSuccess, new NotFoundError().CausedBy(deleteResult.Errors));
         }
         catch (Exception e)
         {
             _logger.LogError(e, "failed by Exception");
-            return Result.Fail(new InternalServerError("failed by exception").CausedBy(e));   
+            return Result.Fail(new InternalServerError().CausedBy(e));   
         }
     }
 }

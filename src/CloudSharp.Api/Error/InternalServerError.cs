@@ -1,6 +1,6 @@
 namespace CloudSharp.Api.Error;
 
-public class InternalServerError(string message) : HttpStatusCodeError(message)
+public class InternalServerError : HttpStatusCodeError
 {
     protected override int HttpStatusCode => 500;
 }

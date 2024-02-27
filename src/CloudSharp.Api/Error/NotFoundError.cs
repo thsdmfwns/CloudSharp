@@ -1,6 +1,6 @@
 namespace CloudSharp.Api.Error;
 
-public class NotFoundError(string message) : HttpStatusCodeError(message)
+public class NotFoundError : HttpStatusCodeError
 {
     protected override int HttpStatusCode => 404;
 }
