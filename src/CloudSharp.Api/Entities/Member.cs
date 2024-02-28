@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace CloudSharp.Api.Entities;
 
 [PrimaryKey(nameof(MemberId))]
+[Index(nameof(LoginId))]
 public class Member
 {
     [Key]
