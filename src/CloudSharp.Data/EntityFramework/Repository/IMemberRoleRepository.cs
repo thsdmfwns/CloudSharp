@@ -1,4 +1,4 @@
-using CloudSharp.Api.Entities;
+using CloudSharp.Data.EntityFramework.Entities;
 using FluentResults;
 
 namespace CloudSharp.Data.EntityFramework.Repository;

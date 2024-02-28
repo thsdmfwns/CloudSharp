@@ -1,5 +1,4 @@
-using CloudSharp.Api.Entities;
-using CloudSharp.Api.Repository;
+using CloudSharp.Data.EntityFramework.Entities;
 using FluentResults;
 using Microsoft.EntityFrameworkCore;
 

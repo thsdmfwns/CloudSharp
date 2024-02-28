@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 
-namespace CloudSharp.Api.Entities;
+namespace CloudSharp.Data.EntityFramework.Entities;
 
 [PrimaryKey(nameof(MemberId))]
 [Index(nameof(LoginId))]
