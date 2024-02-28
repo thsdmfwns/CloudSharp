@@ -35,4 +35,8 @@
       <ProjectReference Include="..\CloudSharp.Share\CloudSharp.Share.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\migrations\CloudSharp.Migrations.csproj" />
+    </ItemGroup>
+
 </Project>
