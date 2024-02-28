@@ -9,6 +9,6 @@ public class MemberRole
     [Key]
     public required ulong Id { get; init; }
     public required string Name { get; init; }
-    public required DateTime CreatedOn { get; init; } = DateTime.UtcNow;
+    public DateTime CreatedOn { get; init; } = DateTime.UtcNow;
     public DateTime? UpdatedOn { get; set; }
 }
