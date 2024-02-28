@@ -220,8 +220,6 @@ public class MemberService(IMemberRepository memberRepository, ILogger<MemberSer
     
 
     #endregion
-
-
     
     public async ValueTask<Result> DeleteMember(Guid id)
     {
