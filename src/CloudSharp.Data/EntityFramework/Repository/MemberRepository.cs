@@ -1,9 +1,9 @@
 using CloudSharp.Api.Entities;
-using CloudSharp.Api.Error;
+using CloudSharp.Api.Repository;
 using FluentResults;
 using Microsoft.EntityFrameworkCore;
 
-namespace CloudSharp.Api.Repository;
+namespace CloudSharp.Data.EntityFramework.Repository;
 
 public class MemberRepository(DatabaseContext context) : IMemberRepository
 {

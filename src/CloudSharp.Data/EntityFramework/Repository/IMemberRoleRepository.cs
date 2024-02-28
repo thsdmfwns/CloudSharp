@@ -1,7 +1,7 @@
 using CloudSharp.Api.Entities;
 using FluentResults;
 
-namespace CloudSharp.Api.Repository;
+namespace CloudSharp.Data.EntityFramework.Repository;
 
 public interface IMemberRoleRepository
 {

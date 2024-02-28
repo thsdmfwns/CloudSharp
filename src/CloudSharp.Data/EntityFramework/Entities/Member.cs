@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using CloudSharp.Share.DTO;
 using Microsoft.EntityFrameworkCore;
 
 namespace CloudSharp.Api.Entities;
