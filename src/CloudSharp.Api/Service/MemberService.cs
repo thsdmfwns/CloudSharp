@@ -78,7 +78,7 @@ public class MemberService(IMemberRepository memberRepository, ILogger<MemberSer
                 MemberId = memberId,
                 LoginId = id,
                 Password = hashedPassword,
-                Role = role,
+                RoleId = role.Id,
                 Email = email,
                 Nickname = nickname,
                 ProfileImageId = profileUrl

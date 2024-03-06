@@ -11,7 +11,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<DatabaseContext>(
     options =>
     {
-        options.UseMySQL("server=localhost;port=11001;database=library;user=root;password=q1w2e3r4",
+        options.UseMySQL("server=localhost;port=11001;database=cloud_sharp;user=root;password=q1w2e3r4",
             b => b.MigrationsAssembly("CloudSharp.Migration"));
     }
 );
