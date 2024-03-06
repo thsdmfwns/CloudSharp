@@ -17,9 +17,16 @@ public class DatabaseContext : DbContext
     {
         var members = modelBuilder.Entity<Member>();
         var memberRoles = modelBuilder.Entity<MemberRole>();
-
         
-        //seeding
+        //Member
+        members
+            .HasOne(e => e.Role)
+            .WithMany()
+            .HasForeignKey(e => e.RoleId)
+            .IsRequired();
+        
+        
+        //MemberRole
         memberRoles.HasData(
             new MemberRole
             {

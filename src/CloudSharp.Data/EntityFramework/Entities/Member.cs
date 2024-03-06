@@ -12,7 +12,8 @@ public class Member
     [Key]
     public required string LoginId { get; init; }
     public required string Password { get; set; }
-    public required MemberRole Role { get; set; }
+    public required ulong RoleId { get; set; }
+    public MemberRole Role { get; set; } = null!;
     public required string Email { get; set; }
     public required string Nickname { get; set; }
     public required Guid? ProfileImageId { get; set; }
