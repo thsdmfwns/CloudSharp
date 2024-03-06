@@ -21,6 +21,7 @@ public class MemberService : IDisposable
     private DbConnection _dbConnection;
     private DatabaseContext _databaseContext;
     private List<Member> _seededMembers;
+    private Faker<Member> _memberFaker;
 
 
     [OneTimeSetUp]
@@ -100,6 +101,48 @@ public class MemberService : IDisposable
         var loginResult = await _memberService.Login(loginId ?? member.LoginId, password ?? _password);
         Assert.That(loginResult.IsFailed, Is.True);
         Assert.That(loginResult.Errors.Any(x => x.GetType() == errorType), Is.True);
+    }
+
+    [Test]
+    public async Task Register()
+    {
+        var roleId = 1ul;
+        var faker = new Faker<Member>().SetRules(roleId);
+        var member = faker.Generate(1).First();
+        var role = await _databaseContext.MemberRoles.FindAsync(roleId);
+        var registerResult = await _memberService.Register(
+            member.LoginId,
+            member.Password,
+            role!,
+            member.Email,
+            member.Nickname,
+            member.ProfileImageId);
+        Assert.That(registerResult.IsSuccess, Is.True);
+        
+        var insertedMemberDto = registerResult.Value;
+        var insertedMember = await _databaseContext.Members.FindAsync(Guid.Parse(insertedMemberDto.MemberId));
+        Assert.That(insertedMember, Is.Not.Null);
+    }
+    
+    [Test]
+    [TestCase(1, null, typeof(ConflictError))] // exist loginId
+    [TestCase(null, "not_email", typeof(BadRequestError))] // bad email
+    public async Task Register_fail(int? seedIndex, string? email, Type errorType)
+    {
+        var loginId = seedIndex is null ? null : _seededMembers[seedIndex.Value].LoginId;
+        var roleId = 1ul;
+        var faker = new Faker<Member>().SetRules(roleId);
+        var member = faker.Generate(1).First();
+        var role = await _databaseContext.MemberRoles.FindAsync(roleId);
+        var registerResult = await _memberService.Register(
+            loginId ?? member.LoginId,
+            member.Password,
+            role!,
+            email ?? member.Email,
+            member.Nickname,
+            member.ProfileImageId);
+        Assert.That(registerResult.IsFailed, Is.True);
+        Assert.That(registerResult.Errors.Any(x => x.GetType() == errorType), Is.True);
     }
     
     
