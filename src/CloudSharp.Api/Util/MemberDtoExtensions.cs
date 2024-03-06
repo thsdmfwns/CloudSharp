@@ -13,8 +13,8 @@ public static class MemberDtoExtensions
             LoginId = member.LoginId,
             Email = member.Email,
             Nickname = member.Nickname,
-            ProfileImageId = member.ProfileImageId.ToString(),
-            RoleId = member.Role.Id
+            ProfileImageId = member.ProfileImageId?.ToString(),
+            RoleId = member.RoleId
         };
     }
 }
