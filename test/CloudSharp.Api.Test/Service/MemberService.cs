@@ -98,6 +98,7 @@ public class MemberService : IDisposable
     {
         var member = _seededMembers.First();
         var loginResult = await _memberService.Login(loginId ?? member.LoginId, password ?? _password);
+        Assert.That(loginResult.IsFailed, Is.True);
         Assert.That(loginResult.Errors.Any(x => x.GetType() == errorType), Is.True);
     }
     
