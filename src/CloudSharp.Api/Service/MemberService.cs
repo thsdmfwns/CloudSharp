@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using CloudSharp.Api.Error;
 using CloudSharp.Api.Util;
 using CloudSharp.Data.EntityFramework.Entities;
@@ -69,6 +70,12 @@ public class MemberService(IMemberRepository memberRepository, ILogger<MemberSer
             if (findMemberResult.IsSuccess)
             {
                 return Result.Fail(new ConflictError().CausedBy("id exist"));
+            }
+
+            var emailValidate = new EmailAddressAttribute();
+            if (! emailValidate.IsValid(email))
+            {
+                return Result.Fail(new BadRequestError().CausedBy("bad email"));
             }
             
             var memberId = Guid.NewGuid();
