@@ -1,5 +1,7 @@
 using System.Data.Common;
+using System.Text;
 using Bogus;
+using CloudSharp.Api.Error;
 using CloudSharp.Api.Service;
 using CloudSharp.Api.Test.Util;
 using CloudSharp.Data.EntityFramework.Entities;
@@ -13,11 +15,12 @@ namespace CloudSharp.Api.Test.Service;
 
 public class MemberService : IDisposable
 {
+    private const string _password = "password";
     private Respawner _respawner;
     private IMemberService _memberService;
     private DbConnection _dbConnection;
     private DatabaseContext _databaseContext;
-    private List<Member> SeededMembers;
+    private List<Member> _seededMembers;
 
 
     [OneTimeSetUp]
@@ -52,12 +55,12 @@ public class MemberService : IDisposable
         _memberService = new Api.Service.MemberService(new MemberRepository(_databaseContext),
             NullLogger<Api.Service.MemberService>.Instance);
         await _respawner.ResetAsync(_dbConnection);
-        SeededMembers = await SeedMembers();
+        _seededMembers = await SeedMembers();
     }
 
     private async ValueTask<List<Member>> SeedMembers()
     {
-        var faker = new Faker<Member>().SetRules(1);
+        var faker = new Faker<Member>().SetRules(1, _password);
         var members = faker.Generate(10);
         await _databaseContext.Members.AddRangeAsync(members);
         await _databaseContext.SaveChangesAsync();
@@ -79,6 +82,26 @@ public class MemberService : IDisposable
         _dbConnection.Close();
         _databaseContext.Dispose();
     }
+
+    [Test]
+    public async Task Login()
+    {
+        var member = _seededMembers.First();
+        var loginResult = await _memberService.Login(member.LoginId, _password);
+        Assert.That(loginResult.IsSuccess, Is.True);
+    }
+
+    [Test]
+    [TestCase(null, "not_password", typeof(UnauthorizedError))] // wrong password
+    [TestCase("not_id", null, typeof(UnauthorizedError)) ] // wrong loginId
+    public async Task Login_fail(string? loginId, string? password, Type errorType)
+    {
+        var member = _seededMembers.First();
+        var loginResult = await _memberService.Login(loginId ?? member.LoginId, password ?? _password);
+        Assert.That(loginResult.Errors.Any(x => x.GetType() == errorType), Is.True);
+    }
+    
+    
     
 
 }
