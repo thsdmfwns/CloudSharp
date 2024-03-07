@@ -50,9 +50,6 @@ namespace CloudSharp.Data.Migrations
                     b.Property<Guid?>("ProfileImageId")
                         .HasColumnType("char(36)");
 
-                    b.Property<ulong>("RoleId")
-                        .HasColumnType("bigint unsigned");
-
                     b.Property<DateTime?>("UpdatedOn")
                         .HasColumnType("datetime(6)");
 
@@ -60,55 +57,7 @@ namespace CloudSharp.Data.Migrations
 
                     b.HasIndex("LoginId");
 
-                    b.HasIndex("RoleId");
-
                     b.ToTable("Members");
-                });
-
-            modelBuilder.Entity("CloudSharp.Data.EntityFramework.Entities.MemberRole", b =>
-                {
-                    b.Property<ulong>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint unsigned");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<DateTime?>("UpdatedOn")
-                        .HasColumnType("datetime(6)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("MemberRoles");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1ul,
-                            CreatedOn = new DateTime(2024, 2, 28, 12, 43, 7, 876, DateTimeKind.Utc).AddTicks(7465),
-                            Name = "admin"
-                        },
-                        new
-                        {
-                            Id = 2ul,
-                            CreatedOn = new DateTime(2024, 2, 28, 12, 43, 7, 876, DateTimeKind.Utc).AddTicks(7474),
-                            Name = "member"
-                        });
-                });
-
-            modelBuilder.Entity("CloudSharp.Data.EntityFramework.Entities.Member", b =>
-                {
-                    b.HasOne("CloudSharp.Data.EntityFramework.Entities.MemberRole", "Role")
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Role");
                 });
 #pragma warning restore 612, 618
         }
