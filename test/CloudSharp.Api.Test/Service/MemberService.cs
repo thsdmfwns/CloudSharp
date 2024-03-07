@@ -1,30 +1,25 @@
 using System.Data.Common;
-using System.Text;
 using Bogus;
 using CloudSharp.Api.Error;
 using CloudSharp.Api.Service;
 using CloudSharp.Api.Test.Util;
+using CloudSharp.Api.Util;
 using CloudSharp.Data.EntityFramework.Entities;
 using CloudSharp.Data.EntityFramework.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
-using Mysqlx.Notice;
 using Respawn;
-using Respawn.Graph;
 
 namespace CloudSharp.Api.Test.Service;
 
 public class MemberService : IDisposable
 {
-    private const string _password = "password";
-    private Respawner _respawner;
-    private IMemberService _memberService;
-    private DbConnection _dbConnection;
-    private DatabaseContext _databaseContext;
-    private List<Member> _seededMembers;
-    private Faker<Member> _memberFaker;
-
-    private static readonly Guid emptyGuid = Guid.Empty;
+    private const string Password = "password";
+    private Respawner _respawner = null!;
+    private IMemberService _memberService = null!;
+    private DbConnection _dbConnection = null!;
+    private DatabaseContext _databaseContext = null!;
+    private List<Member> _seededMembers = null!;
     
     [OneTimeSetUp]
     public async Task OneTimeSetup()
@@ -63,7 +58,7 @@ public class MemberService : IDisposable
 
     private async ValueTask<List<Member>> SeedMembers()
     {
-        var faker = new Faker<Member>().SetRules(_password);
+        var faker = new Faker<Member>().SetRules();
         var members = faker.Generate(10);
         await _databaseContext.Members.AddRangeAsync(members);
         await _databaseContext.SaveChangesAsync();
@@ -94,7 +89,7 @@ public class MemberService : IDisposable
     {
         var member = _seededMembers.First();
         loginId ??= member.LoginId;
-        password ??= _password;
+        password ??= Password;
         var loginResult = await _memberService.Login(loginId, password);
         
         if (errorType is null)
@@ -140,6 +135,139 @@ public class MemberService : IDisposable
         //fail
         Assert.That(registerResult.IsFailed, Is.True);
         Assert.That(registerResult.HasError(x => x.GetType() == errorType), Is.True);
+    }
+    
+    [Test]
+    [TestCase(null, null, null)] //success
+    [TestCase("", null, typeof(NotFoundError))] //wrong id
+    public async Task UpdateNickname(string? idString, string? nickname, Type? errorType)
+    {
+        const string updateNickname = "updateNickname";
+        var memberId = idString?.ToGuid() ?? _seededMembers.First().MemberId;
+        nickname ??= updateNickname;
+        var updateResult = await _memberService.UpdateNickname(memberId, nickname);
+
+        if (errorType is null)
+        {
+            Assert.That(updateResult.IsSuccess, Is.True);
+            var updatedMember = await _databaseContext.Members.FindAsync(memberId);
+            Assert.That(updatedMember!.Nickname, Is.EqualTo(updateNickname));
+            return;
+        }
+        
+        //fail
+        Assert.That(updateResult.IsFailed, Is.True);
+        Assert.That(updateResult.HasError(x => x.GetType() == errorType), Is.True);
+    }
+
+    [Test]
+    [TestCase(null, null, null)] //success
+    [TestCase("", null, typeof(NotFoundError))] //wrong Id
+    [TestCase(null, "not_email", typeof(BadRequestError))] //wrong email
+    public async Task UpdateEmail(string? idString, string? email, Type? errorType)
+    {
+        var memberId = idString?.ToGuid() ?? _seededMembers.First().MemberId;
+        email ??= new Faker().Internet.Email();
+        
+        var updateResult = await _memberService.UpdateEmail(memberId, email);
+
+        if (errorType is null)
+        {
+            Assert.That(updateResult.IsSuccess, Is.True);
+            var updatedMember = await _databaseContext.Members.FindAsync(memberId);
+            Assert.That(updatedMember!.Email, Is.EqualTo(email));
+            return;
+        }
+        
+        //fail
+        Assert.That(updateResult.IsFailed, Is.True);
+        Assert.That(updateResult.HasError(x => x.GetType() == errorType), Is.True);
+    }
+    
+    [Test]
+    [TestCase(null, null, null)] //success
+    [TestCase("", null, typeof(NotFoundError))] //wrong id
+    public async Task UpdatePassword(string? idString, string? password, Type? errorType)
+    {
+        const string updatepassword = "updatePassword";
+        var memberId = idString?.ToGuid() ?? _seededMembers.First().MemberId;
+        var updateResult = await _memberService.UpdatePassword(memberId, updatepassword);
+
+        if (errorType is null)
+        {
+            Assert.That(updateResult.IsSuccess, Is.True);
+            var updatedMember = await _databaseContext.Members.FindAsync(memberId);
+            Assert.That(PasswordHasher.VerifyHashedPassword(updatedMember!.Password, updatepassword).IsSuccess, Is.True);
+            return;
+        }
+        
+        //fail
+        Assert.That(updateResult.IsFailed, Is.True);
+        Assert.That(updateResult.HasError(x => x.GetType() == errorType), Is.True);
+    }
+
+    [Test]
+    [TestCase(null, null, null)] //success
+    [TestCase("", null, typeof(NotFoundError))] //wrong id
+    public async Task UpdateProfileUrl(string? idString, string? profileImageIdString, Type? errorType)
+    {
+        var memberId = idString?.ToGuid() ?? _seededMembers.First().MemberId;
+        var profileImageId = profileImageIdString?.ToGuid() ?? Guid.NewGuid();
+
+        var updateResult = await _memberService.UpdateProfileUrl(memberId, profileImageId);
+        if (errorType is null)
+        {
+            Assert.That(updateResult.IsSuccess, Is.True);
+            var updatedMember = await _databaseContext.Members.FindAsync(memberId);
+            Assert.That(updatedMember!.ProfileImageId, Is.EqualTo(profileImageId));
+            return;
+        }
+        
+        //fail
+        Assert.That(updateResult.IsFailed, Is.True);
+        Assert.That(updateResult.HasError(x => x.GetType() == errorType), Is.True);
+    }
+
+    [Test]
+    [TestCase(null, null)] // success
+    [TestCase("", typeof(NotFoundError))] // wrong id
+    public async Task FindByMemberId(string? idString, Type? errorType)
+    {
+        var member = _seededMembers.First();
+        var memberId = idString?.ToGuid() ?? member.MemberId;
+        var findResult = await _memberService.FindByMemberId(memberId);
+
+        if (errorType is null)
+        {
+            Assert.That(findResult.IsSuccess, Is.True);
+            Assert.That(findResult.Value, Is.EqualTo(member.ToMemberDto()));
+            return;
+        }
+        
+        //fail
+        Assert.That(findResult.IsFailed, Is.True);
+        Assert.That(findResult.HasError(x => x.GetType() == errorType), Is.True);
+    }
+    
+    [Test]
+    [TestCase(null, null)] // success
+    [TestCase("not_id", typeof(NotFoundError))] // wrong id
+    public async Task FindByLoginId(string? id, Type? errorType)
+    {
+        var member = _seededMembers.First();
+        id ??= member.LoginId;
+        var findResult = await _memberService.FindByLoginId(id);
+
+        if (errorType is null)
+        {
+            Assert.That(findResult.IsSuccess, Is.True);
+            Assert.That(findResult.Value, Is.EqualTo(member.ToMemberDto()));
+            return;
+        }
+        
+        //fail
+        Assert.That(findResult.IsFailed, Is.True);
+        Assert.That(findResult.HasError(x => x.GetType() == errorType), Is.True);
     }
     
 
