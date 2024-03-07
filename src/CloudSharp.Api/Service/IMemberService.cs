@@ -10,12 +10,10 @@ public interface IMemberService
 
     public ValueTask<Result<MemberDto>> Register(string id,
         string password,
-        MemberRole role,
         string email,
         string nickname,
         Guid? profileUrl);
 
-    public ValueTask<Result> UpdateRole(Guid id, MemberRole role);
     public ValueTask<Result> UpdateEmail(Guid id, string email);
     public ValueTask<Result> UpdateNickname(Guid id, string nickname);
     public ValueTask<Result> UpdatePassword(Guid id, string updatePassword);

@@ -67,7 +67,7 @@ public class MemberService(IMemberRepository memberRepository, ILogger<MemberSer
         }
     }
 
-    public async ValueTask<Result<MemberDto>> Register(string id, string password, MemberRole role, string email, string nickname, Guid? profileUrl)
+    public async ValueTask<Result<MemberDto>> Register(string id, string password, string email, string nickname, Guid? profileUrl)
     {
         try
         {
@@ -90,7 +90,6 @@ public class MemberService(IMemberRepository memberRepository, ILogger<MemberSer
                 MemberId = memberId,
                 LoginId = id,
                 Password = hashedPassword,
-                RoleId = role.Id,
                 Email = email,
                 Nickname = nickname,
                 ProfileImageId = profileUrl
@@ -113,20 +112,6 @@ public class MemberService(IMemberRepository memberRepository, ILogger<MemberSer
     #endregion
 
     #region Update
-
-    public async ValueTask<Result> UpdateRole(Guid id, MemberRole role)
-    {
-        try
-        {
-            var updateResult = await memberRepository.UpdateMember(id, x => x.RoleId = role.Id);
-            return Result.OkIf(updateResult.IsSuccess, new NotFoundError().CausedBy(updateResult.Errors));
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "failed by Exception");
-            return Result.Fail(new InternalServerError().CausedBy(e));
-        }
-    }
 
     public async ValueTask<Result> UpdateEmail(Guid id, string email)
     {

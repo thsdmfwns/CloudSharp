@@ -9,7 +9,6 @@ public class MemberRepository(DatabaseContext context) : IMemberRepository
     public async ValueTask<Result<Member>> FindByLoginId(string id)
     {
         var member = await context.Members
-            .Include(x => x.Role)
             .SingleOrDefaultAsync(x => x.LoginId == id);
         return member is null ? Result.Fail("member not found") : member;
     }
@@ -24,7 +23,6 @@ public class MemberRepository(DatabaseContext context) : IMemberRepository
     public async ValueTask<Result<Member>> FindByMemberId(Guid id)
     {
         var member = await context.Members
-            .Include(x => x.Role)
             .SingleOrDefaultAsync(x => x.MemberId == id);
         return member is null ? Result.Fail("member not found") : member;
     }

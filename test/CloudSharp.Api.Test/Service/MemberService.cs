@@ -61,7 +61,7 @@ public class MemberService : IDisposable
 
     private async ValueTask<List<Member>> SeedMembers()
     {
-        var faker = new Faker<Member>().SetRules(1, _password);
+        var faker = new Faker<Member>().SetRules(_password);
         var members = faker.Generate(10);
         await _databaseContext.Members.AddRangeAsync(members);
         await _databaseContext.SaveChangesAsync();
@@ -100,20 +100,17 @@ public class MemberService : IDisposable
         var member = _seededMembers.First();
         var loginResult = await _memberService.Login(loginId ?? member.LoginId, password ?? _password);
         Assert.That(loginResult.IsFailed, Is.True);
-        Assert.That(loginResult.Errors.Any(x => x.GetType() == errorType), Is.True);
+        Assert.That(loginResult.HasError(x => x.GetType() == errorType), Is.True);
     }
 
     [Test]
     public async Task Register()
     {
-        var roleId = 1ul;
-        var faker = new Faker<Member>().SetRules(roleId);
+        var faker = new Faker<Member>().SetRules();
         var member = faker.Generate(1).First();
-        var role = await _databaseContext.MemberRoles.FindAsync(roleId);
         var registerResult = await _memberService.Register(
             member.LoginId,
             member.Password,
-            role!,
             member.Email,
             member.Nickname,
             member.ProfileImageId);
@@ -131,21 +128,18 @@ public class MemberService : IDisposable
     {
         var loginId = seedIndex is null ? null : _seededMembers[seedIndex.Value].LoginId;
         var roleId = 1ul;
-        var faker = new Faker<Member>().SetRules(roleId);
+        var faker = new Faker<Member>().SetRules();
         var member = faker.Generate(1).First();
-        var role = await _databaseContext.MemberRoles.FindAsync(roleId);
         var registerResult = await _memberService.Register(
             loginId ?? member.LoginId,
             member.Password,
-            role!,
             email ?? member.Email,
             member.Nickname,
             member.ProfileImageId);
+        
         Assert.That(registerResult.IsFailed, Is.True);
-        Assert.That(registerResult.Errors.Any(x => x.GetType() == errorType), Is.True);
+        Assert.That(registerResult.HasError(x => x.GetType() == errorType), Is.True);
     }
-    
-    
     
 
 }

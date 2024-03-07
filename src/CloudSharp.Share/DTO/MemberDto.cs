@@ -8,8 +8,6 @@ public record MemberDto
     public required string MemberId { get; init; }
     [JsonPropertyName("lid")]
     public required string LoginId { get; init; }
-    [JsonPropertyName("role")]
-    public required ulong RoleId { get; init; }
     [JsonPropertyName("email")]
     public required string Email { get; init; }
     [JsonPropertyName("nick")]

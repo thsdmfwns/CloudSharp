@@ -14,7 +14,6 @@ public static class MemberDtoExtensions
             Email = member.Email,
             Nickname = member.Nickname,
             ProfileImageId = member.ProfileImageId?.ToString(),
-            RoleId = member.RoleId
         };
     }
 }
