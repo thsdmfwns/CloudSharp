@@ -8,6 +8,7 @@ using CloudSharp.Data.EntityFramework.Entities;
 using CloudSharp.Data.EntityFramework.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
+using Mysqlx.Notice;
 using Respawn;
 using Respawn.Graph;
 
@@ -23,7 +24,8 @@ public class MemberService : IDisposable
     private List<Member> _seededMembers;
     private Faker<Member> _memberFaker;
 
-
+    private static readonly Guid emptyGuid = Guid.Empty;
+    
     [OneTimeSetUp]
     public async Task OneTimeSetup()
     {
@@ -85,58 +87,57 @@ public class MemberService : IDisposable
     }
 
     [Test]
-    public async Task Login()
-    {
-        var member = _seededMembers.First();
-        var loginResult = await _memberService.Login(member.LoginId, _password);
-        Assert.That(loginResult.IsSuccess, Is.True);
-    }
-
-    [Test]
+    [TestCase(null, null, null)] // success
     [TestCase(null, "not_password", typeof(UnauthorizedError))] // wrong password
     [TestCase("not_id", null, typeof(UnauthorizedError)) ] // wrong loginId
-    public async Task Login_fail(string? loginId, string? password, Type errorType)
+    public async Task Login(string? loginId, string? password, Type? errorType)
     {
         var member = _seededMembers.First();
-        var loginResult = await _memberService.Login(loginId ?? member.LoginId, password ?? _password);
+        loginId ??= member.LoginId;
+        password ??= _password;
+        var loginResult = await _memberService.Login(loginId, password);
+        
+        if (errorType is null)
+        {
+            Assert.That(loginResult.IsSuccess, Is.True);
+            return;
+        }
+        
+        //fail
         Assert.That(loginResult.IsFailed, Is.True);
         Assert.That(loginResult.HasError(x => x.GetType() == errorType), Is.True);
     }
 
     [Test]
-    public async Task Register()
+    [TestCase(null, null, null, null, null, null, false)] // success
+    [TestCase(null, null, null, null, null, typeof(ConflictError), true)] // existed id
+    [TestCase(null, null, "not_email", null, null, typeof(BadRequestError), false)] // wrong email
+    public async Task Register(string? id, string? password, string? email, string? nickname, Guid? profileUrl, Type? errorType, bool isExistedId)
     {
         var faker = new Faker<Member>().SetRules();
         var member = faker.Generate(1).First();
+        id ??= member.LoginId ;
+        if (isExistedId)
+        {
+            id = _seededMembers.First().LoginId;
+        }
+        password ??= member.Password;
+        email ??= member.Email;
+        nickname ??= member.Nickname;
+        profileUrl ??= member.ProfileImageId;
         var registerResult = await _memberService.Register(
-            member.LoginId,
-            member.Password,
-            member.Email,
-            member.Nickname,
-            member.ProfileImageId);
-        Assert.That(registerResult.IsSuccess, Is.True);
+            id, password, email, nickname, profileUrl);
         
-        var insertedMemberDto = registerResult.Value;
-        var insertedMember = await _databaseContext.Members.FindAsync(Guid.Parse(insertedMemberDto.MemberId));
-        Assert.That(insertedMember, Is.Not.Null);
-    }
-    
-    [Test]
-    [TestCase(1, null, typeof(ConflictError))] // exist loginId
-    [TestCase(null, "not_email", typeof(BadRequestError))] // bad email
-    public async Task Register_fail(int? seedIndex, string? email, Type errorType)
-    {
-        var loginId = seedIndex is null ? null : _seededMembers[seedIndex.Value].LoginId;
-        var roleId = 1ul;
-        var faker = new Faker<Member>().SetRules();
-        var member = faker.Generate(1).First();
-        var registerResult = await _memberService.Register(
-            loginId ?? member.LoginId,
-            member.Password,
-            email ?? member.Email,
-            member.Nickname,
-            member.ProfileImageId);
-        
+        if (errorType is null)
+        {
+            Assert.That(registerResult.IsSuccess, Is.True);
+            var insertedMemberDto = registerResult.Value;
+            var insertedMember = await _databaseContext.Members.FindAsync(Guid.Parse(insertedMemberDto.MemberId));
+            Assert.That(insertedMember, Is.Not.Null);
+            return;
+        }
+
+        //fail
         Assert.That(registerResult.IsFailed, Is.True);
         Assert.That(registerResult.HasError(x => x.GetType() == errorType), Is.True);
     }
