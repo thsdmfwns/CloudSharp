@@ -21,14 +21,19 @@ public class MemberService(IMemberRepository memberRepository, ILogger<MemberSer
             {
                 return Result.Fail(new UnauthorizedError().CausedBy(findResult.Errors));
             }
-            var expectedPasswordHash = findResult.Value.Password;
+
+            var member = findResult.Value;
+            var expectedPasswordHash = member.Password;
             var passwordVerifyResult = PasswordHasher.VerifyHashedPassword(expectedPasswordHash, password);
             if (passwordVerifyResult.IsFailed)
             {
                 return Result.Fail(new UnauthorizedError().CausedBy(passwordVerifyResult.Errors));
             }
-        
-            return findResult.Value.ToMemberDto();
+
+            var updateResult = await memberRepository.UpdateMember(member.MemberId, 
+                x => x.LastAccessed = DateTime.Now);
+            
+            return member.ToMemberDto();
         }
         catch (Exception e)
         {
@@ -113,7 +118,7 @@ public class MemberService(IMemberRepository memberRepository, ILogger<MemberSer
     {
         try
         {
-            var updateResult = await memberRepository.UpdateRole(id, role);
+            var updateResult = await memberRepository.UpdateMember(id, x => x.RoleId = role.Id);
             return Result.OkIf(updateResult.IsSuccess, new NotFoundError().CausedBy(updateResult.Errors));
         }
         catch (Exception e)
@@ -127,7 +132,12 @@ public class MemberService(IMemberRepository memberRepository, ILogger<MemberSer
     {
         try
         {
-            var updateResult = await memberRepository.UpdateEmail(id, email);
+            var emailValidate = new EmailAddressAttribute();
+            if (! emailValidate.IsValid(email))
+            {
+                return Result.Fail(new BadRequestError().CausedBy("bad email"));
+            }
+            var updateResult = await memberRepository.UpdateMember(id, x => x.Email = email);
             return Result.OkIf(updateResult.IsSuccess, new NotFoundError().CausedBy(updateResult.Errors));
         }
         catch (Exception e)
@@ -142,7 +152,7 @@ public class MemberService(IMemberRepository memberRepository, ILogger<MemberSer
     {
         try
         {
-            var updateResult = await memberRepository.UpdateNickname(id, nickname);
+            var updateResult = await memberRepository.UpdateMember(id, x => x.Nickname = nickname);
             return Result.OkIf(updateResult.IsSuccess, new NotFoundError().CausedBy(updateResult.Errors));
         }
         catch (Exception e)
@@ -157,7 +167,7 @@ public class MemberService(IMemberRepository memberRepository, ILogger<MemberSer
         try
         {
             var passwordHash = PasswordHasher.HashPassword(password);
-            var updateResult = await memberRepository.UpdatePassword(id, passwordHash);
+            var updateResult = await memberRepository.UpdateMember(id, x => x.Password = passwordHash);
             return Result.OkIf(updateResult.IsSuccess, new NotFoundError().CausedBy(updateResult.Errors));
         }
         catch (Exception e)
@@ -172,7 +182,7 @@ public class MemberService(IMemberRepository memberRepository, ILogger<MemberSer
         try
         {
             //todo check file exist
-            var updateResult = await memberRepository.UpdateProfileId(id, profileImageId);
+            var updateResult = await memberRepository.UpdateMember(id, x => x.ProfileImageId = profileImageId);
             return Result.OkIf(updateResult.IsSuccess, new NotFoundError().CausedBy(updateResult.Errors));
         }
         catch (Exception e)
