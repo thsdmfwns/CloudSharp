@@ -1,6 +1,7 @@
 using Bogus;
 using CloudSharp.Api.Util;
 using CloudSharp.Data.EntityFramework.Entities;
+using CloudSharp.Data.EntityFramework.Repository;
 
 namespace CloudSharp.Api.Test.Util;
 
@@ -17,4 +18,13 @@ public static class EntityExtensions
             .RuleFor(p => p.ProfileImageId, f => Guid.NewGuid());
         return faker;
     } 
+    
+    public static async ValueTask<List<Member>> SeedMembers(this DatabaseContext databaseContext, int count = 10)
+    {
+        var faker = new Faker<Member>().SetRules();
+        var members = faker.Generate(count);
+        await databaseContext.Members.AddRangeAsync(members);
+        await databaseContext.SaveChangesAsync();
+        return members;
+    }
 }

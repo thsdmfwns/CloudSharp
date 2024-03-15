@@ -24,27 +24,10 @@ public class MemberService : IDisposable
     [OneTimeSetUp]
     public async Task OneTimeSetup()
     {
-        _databaseContext = BuildDatabaseContext();
+        _databaseContext = DatabaseUtil.GetDatabaseContext();
         _dbConnection = _databaseContext.Database.GetDbConnection();
-        var respawnerOptions =  new RespawnerOptions
-        {
-            SchemasToInclude =
-            [
-                "cloud_sharp"
-            ],
-            TablesToIgnore =
-            [
-                "MemberRoles",
-                "__EFMigrationsHistory"
-            ],
-            DbAdapter = DbAdapter.MySql
-        };
-        await _dbConnection.OpenAsync();
-        
-        if((await _databaseContext.Database.GetPendingMigrationsAsync()).Any()){
-            await _databaseContext.Database.MigrateAsync();
-        }
-        _respawner = await Respawner.CreateAsync(_dbConnection, respawnerOptions);
+        _respawner = await _dbConnection.GetRespawner();
+        await _databaseContext.MigrateAsync();
     }
 
     [SetUp]
@@ -53,26 +36,7 @@ public class MemberService : IDisposable
         _memberService = new Api.Service.MemberService(new MemberRepository(_databaseContext),
             NullLogger<Api.Service.MemberService>.Instance);
         await _respawner.ResetAsync(_dbConnection);
-        _seededMembers = await SeedMembers();
-    }
-
-    private async ValueTask<List<Member>> SeedMembers()
-    {
-        var faker = new Faker<Member>().SetRules();
-        var members = faker.Generate(10);
-        await _databaseContext.Members.AddRangeAsync(members);
-        await _databaseContext.SaveChangesAsync();
-        return members;
-    }
-    
-
-    private DatabaseContext BuildDatabaseContext()
-    {
-        var dbContextOptionsBuilder = new DbContextOptionsBuilder<DatabaseContext>();
-        dbContextOptionsBuilder.UseMySQL(
-            "server=localhost;port=11001;database=cloud_sharp;user=root;password=q1w2e3r4",
-            b => b.MigrationsAssembly("CloudSharp.Migration"));
-        return new DatabaseContext(dbContextOptionsBuilder.Options);
+        _seededMembers = await _databaseContext.SeedMembers();
     }
 
     public void Dispose()
@@ -189,15 +153,15 @@ public class MemberService : IDisposable
     [TestCase("", null, typeof(NotFoundError))] //wrong id
     public async Task UpdatePassword(string? idString, string? password, Type? errorType)
     {
-        const string updatepassword = "updatePassword";
+        const string updatePassword = "updatePassword";
         var memberId = idString?.ToGuid() ?? _seededMembers.First().MemberId;
-        var updateResult = await _memberService.UpdatePassword(memberId, updatepassword);
+        var updateResult = await _memberService.UpdatePassword(memberId, updatePassword);
 
         if (errorType is null)
         {
             Assert.That(updateResult.IsSuccess, Is.True);
             var updatedMember = await _databaseContext.Members.FindAsync(memberId);
-            Assert.That(PasswordHasher.VerifyHashedPassword(updatedMember!.Password, updatepassword).IsSuccess, Is.True);
+            Assert.That(PasswordHasher.VerifyHashedPassword(updatedMember!.Password, updatePassword).IsSuccess, Is.True);
             return;
         }
         
