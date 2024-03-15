@@ -1,6 +1,6 @@
 namespace CloudSharp.Share.Enum;
 
-public enum FileStreamTargetType
+public enum TargetFileDirectoryType
 {
     Member,
     Guild,
