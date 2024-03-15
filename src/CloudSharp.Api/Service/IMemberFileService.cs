@@ -15,7 +15,7 @@ public interface IMemberFileService
     Result<List<FolderInfoDto>> GetFolders(Guid directoryId, string? targetFolderPath);
     Result<FolderInfoDto> GetFolder(Guid directoryId, string targetPath);
     Result MoveFolder(Guid directoryId, string targetPath, string? toFolderPath);
-    Result RenameFolder(Guid directoryId, string? path);
+    Result RenameFolder(Guid directoryId, string? targetPath);
     Result RemoveFolder(Guid directoryId, string targetPath, string folderName);
     Result MakeFolder(Guid directoryId, string? targetPath, string folderName);
             
