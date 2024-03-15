@@ -6,6 +6,7 @@ namespace CloudSharp.Data.Ticket;
 
 public class FileUploadTicket : ITicket<FileUploadTicket>
 {
+    public required string TargetFileName { get; init; }
     public required string? TargetFolderPath { get; init; }
     public required Guid TargetFileDirectoryId { get; init; }
     public required TargetFileDirectoryType TargetFileDirectoryType { get; init; }
