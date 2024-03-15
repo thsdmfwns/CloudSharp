@@ -1,6 +1,6 @@
 namespace CloudSharp.Api.Test.Util;
 
-public static class GuidExtension
+public static class StringExtension
 {
     public static Guid ToGuid(this string guidString)
     {
