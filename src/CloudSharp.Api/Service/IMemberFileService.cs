@@ -8,7 +8,7 @@ public interface IMemberFileService
 {
     Result<List<FileInfoDto>> GetFiles(Guid directoryId, string? targetFolderPath);
     Result<FileInfoDto> GetFile(Guid directoryId, string targetPath);
-    Result MoveFile(Guid directoryId, string targetPath, string? toFolderPath);
+    Result MoveFile(Guid directoryId, string targetPath, string? toFolderPath, string fileName);
     Result RenameFile(Guid directoryId, string targetPath, string fileName);
     Result RemoveFile(Guid directoryId, string targetPath);
         
