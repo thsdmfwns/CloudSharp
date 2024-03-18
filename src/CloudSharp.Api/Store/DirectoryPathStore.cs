@@ -5,6 +5,12 @@ namespace CloudSharp.Api.Store;
 
 public class DirectoryPathStore : IDirectoryPathStore
 {
+    public DirectoryPathStore()
+    {
+        Directory.CreateDirectory(MemberDirectoryPath);
+        Directory.CreateDirectory(GuildDirectoryPath);
+    }
+    
     public string VolumePath => "/cloud_sharp";
     public string MemberDirectoryPath => Path.Combine(VolumePath, "member");
     public string GuildDirectoryPath => Path.Combine(VolumePath, "guild");
