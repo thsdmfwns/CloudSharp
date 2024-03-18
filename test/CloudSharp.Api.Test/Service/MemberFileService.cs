@@ -76,7 +76,7 @@ public class MemberFileService
         if (errorType is null)
         {
             Assert.That(findResult.IsSuccess, Is.True);
-            Assert.That(findResult.ValueOrDefault, Is.Not.Null);
+            Assert.That(findResult.Value.Name, Is.EqualTo(Path.GetFileName(targetPath)));
             return;
         }
         //fail
