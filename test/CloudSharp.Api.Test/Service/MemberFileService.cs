@@ -112,4 +112,29 @@ public class MemberFileService
         Assert.That(moveResult.IsFailed, Is.True);
         Assert.That(moveResult.HasError(x => x.GetType() == errorType), Is.True);
     }
+
+    [Test]
+    [TestCase(null, null, null, null)] //success
+    [TestCase(null, null, "  ", typeof(BadRequestError))] //wrong file name
+    [TestCase(null, null, "not/file", typeof(BadRequestError))] //wrong file name
+    [TestCase("", null, null, typeof(NotFoundError))] //wrong id
+    [TestCase(null, "not_file", null, typeof(NotFoundError))] //wrong target
+    public void RenameFile(string? directoryIdString, string? targetPath, string? fileName, Type? errorType)
+    {
+        var directoryId = directoryIdString?.ToGuid() ?? _memberDirectoryId;
+        targetPath ??= _fileInDirectory;
+        fileName ??= _faker.System.FileName();
+
+        var renameResult = _memberFileService.RenameFile(directoryId, targetPath, fileName);
+        if (errorType is null)
+        {
+            Assert.That(renameResult.IsSuccess, Is.True);
+            var renamedFilePath = _directoryPathStore.GetTargetPath(TargetFileDirectoryType.Member, directoryId, fileName);
+            Assert.That(File.Exists(renamedFilePath), Is.True);
+            return;
+        }
+        //fail
+        Assert.That(renameResult.IsFailed, Is.True);
+        Assert.That(renameResult.HasError(x => x.GetType() == errorType), Is.True);
+    }
 }
