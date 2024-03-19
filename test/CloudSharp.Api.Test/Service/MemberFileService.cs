@@ -15,7 +15,7 @@ public class MemberFileService
     private Guid _memberDirectoryId;
     private string _memberDirectoryPath = null!;
     const string FolderName  = "Folder";
-    private IDirectoryPathStore _directoryPathStore = null!;
+    private IFileStore _fileStore = null!;
     private Faker _faker = null!;
     private string _fileInDirectory = null!;
     private string _fileInFolder= null!;
@@ -23,10 +23,10 @@ public class MemberFileService
     [OneTimeSetUp]
     public void OneTimeSetUp()
     {
-        _directoryPathStore = new DirectoryPathStore("/tmp/cloud_sharp"); 
+        _fileStore = new FileStore("/tmp/cloud_sharp"); 
         _memberDirectoryId = Guid.NewGuid();
         _memberDirectoryPath =
-            _directoryPathStore.GetTargetPath(DirectoryType.Member, _memberDirectoryId, "");
+            _fileStore.GetTargetPath(DirectoryType.Member, _memberDirectoryId, "");
         _faker = new Faker();
         Directory.CreateDirectory(Path.Combine(_memberDirectoryPath, FolderName));
     }
@@ -35,7 +35,7 @@ public class MemberFileService
     public void SetUp()
     {
         _memberFileService =
-            new Api.Service.MemberFileService(_directoryPathStore, NullLogger<Api.Service.MemberFileService>.Instance);
+            new Api.Service.MemberFileService(_fileStore, NullLogger<Api.Service.MemberFileService>.Instance);
         Directory.Delete(_memberDirectoryPath, true);
         Directory.CreateDirectory(Path.Combine(_memberDirectoryPath, FolderName));
         _fileInDirectory = _faker.MakeFakeFile(_memberDirectoryPath, null);
@@ -103,7 +103,7 @@ public class MemberFileService
         if (errorType is null)
         {
             Assert.That(moveResult.IsSuccess, Is.True);
-            var movedFilePath = _directoryPathStore.GetTargetPath(DirectoryType.Member, directoryId,
+            var movedFilePath = _fileStore.GetTargetPath(DirectoryType.Member, directoryId,
                 Path.Combine(toFolderPath, fileName));
             Assert.That(File.Exists(movedFilePath), Is.True);
             return;
@@ -129,7 +129,7 @@ public class MemberFileService
         if (errorType is null)
         {
             Assert.That(renameResult.IsSuccess, Is.True);
-            var renamedFilePath = _directoryPathStore.GetTargetPath(DirectoryType.Member, directoryId, fileName);
+            var renamedFilePath = _fileStore.GetTargetPath(DirectoryType.Member, directoryId, fileName);
             Assert.That(File.Exists(renamedFilePath), Is.True);
             return;
         }
@@ -152,7 +152,7 @@ public class MemberFileService
         if (errorType is null)
         {
             Assert.That(removeResult.IsSuccess, Is.True);
-            var removedFilePath = _directoryPathStore.GetTargetPath(DirectoryType.Member, directoryId, targetPath);
+            var removedFilePath = _fileStore.GetTargetPath(DirectoryType.Member, directoryId, targetPath);
             Assert.That(File.Exists(removedFilePath), Is.False);
             return;
         }

@@ -2,7 +2,7 @@ using CloudSharp.Share.Enum;
 
 namespace CloudSharp.Api.Store;
 
-public interface IDirectoryPathStore
+public interface IFileStore
 {
 
     string VolumePath { get; }

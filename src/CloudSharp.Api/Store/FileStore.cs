@@ -3,9 +3,9 @@ using CloudSharp.Share.Enum;
 
 namespace CloudSharp.Api.Store;
 
-public class DirectoryPathStore : IDirectoryPathStore
+public class FileStore : IFileStore
 {
-    public DirectoryPathStore(string volumePath = "/cloud_sharp" )
+    public FileStore(string volumePath = "/cloud_sharp" )
     {
         VolumePath = volumePath;
         Directory.CreateDirectory(MemberDirectoryPath);
