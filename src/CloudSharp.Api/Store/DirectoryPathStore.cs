@@ -16,12 +16,12 @@ public class DirectoryPathStore : IDirectoryPathStore
     public string MemberDirectoryPath => Path.Combine(VolumePath, "member");
     public string GuildDirectoryPath => Path.Combine(VolumePath, "guild");
     
-    public string GetTargetPath(TargetFileDirectoryType targetFileDirectoryType, Guid directoryId, string targetPath)
+    public string GetTargetPath(DirectoryType directoryType, Guid directoryId, string targetPath)
     {
-        var directoryPath = targetFileDirectoryType switch
+        var directoryPath = directoryType switch
         {
-            TargetFileDirectoryType.Member => MemberDirectoryPath,
-            TargetFileDirectoryType.Guild => MemberDirectoryPath,
+            DirectoryType.Member => MemberDirectoryPath,
+            DirectoryType.Guild => MemberDirectoryPath,
             _ => VolumePath
         };
         return Path.Combine(directoryPath, directoryId.ToString(), targetPath);

@@ -8,6 +8,6 @@ public interface IDirectoryPathStore
     string VolumePath { get; }
     string MemberDirectoryPath { get; }
     string GuildDirectoryPath { get; }
-    string GetTargetPath(TargetFileDirectoryType targetFileDirectoryType, Guid directoryId,
+    string GetTargetPath(DirectoryType directoryType, Guid directoryId,
         string targetPath);
 }

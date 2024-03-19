@@ -9,7 +9,7 @@ public class FileUploadTicket : ITicket<FileUploadTicket>
     public required string TargetFileName { get; init; }
     public required string? TargetFolderPath { get; init; }
     public required Guid TargetFileDirectoryId { get; init; }
-    public required TargetFileDirectoryType TargetFileDirectoryType { get; init; }
+    public required DirectoryType DirectoryType { get; init; }
     public DateTimeOffset? ExpireTime { get; init; }
     public Guid Token { get; init; }
     public Member? TicketOwner { get; init; }

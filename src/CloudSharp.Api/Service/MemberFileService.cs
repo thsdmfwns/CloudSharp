@@ -19,7 +19,7 @@ public class MemberFileService(IDirectoryPathStore _directoryPathStore, ILogger<
         try
         {
 
-            var path = _directoryPathStore.GetTargetPath(TargetFileDirectoryType.Member, directoryId,
+            var path = _directoryPathStore.GetTargetPath(DirectoryType.Member, directoryId,
                 targetFolderPath ?? string.Empty);
             if (!Directory.Exists(path))
             {
@@ -40,7 +40,7 @@ public class MemberFileService(IDirectoryPathStore _directoryPathStore, ILogger<
     {
         try
         {
-            var path = _directoryPathStore.GetTargetPath(TargetFileDirectoryType.Member, directoryId,
+            var path = _directoryPathStore.GetTargetPath(DirectoryType.Member, directoryId,
                 targetPath);
             if (!File.Exists(path))
             {
@@ -60,8 +60,8 @@ public class MemberFileService(IDirectoryPathStore _directoryPathStore, ILogger<
     {
         try
         {
-            var fromPath = _directoryPathStore.GetTargetPath(TargetFileDirectoryType.Member, directoryId, targetPath);
-            var toPath = _directoryPathStore.GetTargetPath(TargetFileDirectoryType.Member, directoryId, toFolderPath ?? string.Empty);
+            var fromPath = _directoryPathStore.GetTargetPath(DirectoryType.Member, directoryId, targetPath);
+            var toPath = _directoryPathStore.GetTargetPath(DirectoryType.Member, directoryId, toFolderPath ?? string.Empty);
             if (!File.Exists(fromPath) || !Directory.Exists(toPath))
             {
                 return Result.Fail(new NotFoundError().CausedBy("folder or file not found"));
@@ -86,7 +86,7 @@ public class MemberFileService(IDirectoryPathStore _directoryPathStore, ILogger<
     {
         try
         {
-            var path = _directoryPathStore.GetTargetPath(TargetFileDirectoryType.Member, directoryId,
+            var path = _directoryPathStore.GetTargetPath(DirectoryType.Member, directoryId,
                 targetPath);
             if (!fileName.IsFileName())
             {
@@ -113,7 +113,7 @@ public class MemberFileService(IDirectoryPathStore _directoryPathStore, ILogger<
     {
         try
         {
-            var path = _directoryPathStore.GetTargetPath(TargetFileDirectoryType.Member, directoryId,
+            var path = _directoryPathStore.GetTargetPath(DirectoryType.Member, directoryId,
                 targetPath);
             if (!File.Exists(path))
             {
