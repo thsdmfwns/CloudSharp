@@ -10,7 +10,7 @@ namespace CloudSharp.Api.Service;
 
 public class MemberFileService(IFileStore fileStore, ILogger<MemberFileService> _logger) : IMemberFileService
 {
-    private string _memberDirectoryPath => fileStore.MemberDirectoryPath;
+    private string MemberDirectoryPath => fileStore.MemberDirectoryPath;
 
     #region Files
 
@@ -18,16 +18,15 @@ public class MemberFileService(IFileStore fileStore, ILogger<MemberFileService> 
     {
         try
         {
-
-            var path = fileStore.GetTargetPath(DirectoryType.Member, directoryId,
+            var findResult = fileStore.GetDirectoryInfo(DirectoryType.Member, directoryId,
                 targetFolderPath ?? string.Empty);
-            if (!Directory.Exists(path))
+            if (findResult.IsFailed)
             {
-                return Result.Fail(new NotFoundError().CausedBy("folder not found"));
+                return Result.Fail(new NotFoundError().CausedBy(findResult.Errors));
             }
 
-            return new DirectoryInfo(path).GetFiles()
-                .Select(x => x.ToDto(_memberDirectoryPath)).ToList();
+            return findResult.Value.GetFiles()
+                .Select(x => x.ToDto(MemberDirectoryPath)).ToList();
         }
         catch (Exception e)
         {
@@ -40,14 +39,13 @@ public class MemberFileService(IFileStore fileStore, ILogger<MemberFileService> 
     {
         try
         {
-            var path = fileStore.GetTargetPath(DirectoryType.Member, directoryId,
-                targetPath);
-            if (!File.Exists(path))
+            var findResult = fileStore.GetFileInfo(DirectoryType.Member, directoryId, targetPath);
+            if (findResult.IsFailed)
             {
-                return Result.Fail(new NotFoundError().CausedBy("file not found"));
+                return Result.Fail(new NotFoundError().CausedBy(findResult.Errors));
             }
 
-            return new FileInfo(path).ToDto(fileStore.MemberDirectoryPath);
+            return findResult.Value.ToDto(fileStore.MemberDirectoryPath);
         }
         catch (Exception e)
         {
@@ -60,18 +58,20 @@ public class MemberFileService(IFileStore fileStore, ILogger<MemberFileService> 
     {
         try
         {
-            var fromPath = fileStore.GetTargetPath(DirectoryType.Member, directoryId, targetPath);
-            var toPath = fileStore.GetTargetPath(DirectoryType.Member, directoryId, toFolderPath ?? string.Empty);
-            if (!File.Exists(fromPath) || !Directory.Exists(toPath))
-            {
-                return Result.Fail(new NotFoundError().CausedBy("folder or file not found"));
-            }
             if (!fileName.IsFileName())
             {
                 return Result.Fail(new BadRequestError().CausedBy($"wrong file name : {fileName}"));
             }
-            var toPathWithFileName = Path.Combine(toPath, fileName);
-            File.Move(fromPath, toPathWithFileName, true);
+            
+            var fromFIndResult = fileStore.GetFileInfo(DirectoryType.Member, directoryId, targetPath);
+            var toFindResult = fileStore.GetDirectoryInfo(DirectoryType.Member, directoryId, toFolderPath ?? string.Empty);
+            if (fromFIndResult.IsFailed || toFindResult.IsFailed)
+            {
+                return Result.Fail(new NotFoundError().CausedBy("folder or file not found"));
+            }
+            
+            var toPathWithFileName = Path.Combine(toFindResult.Value.FullName, fileName);
+            fromFIndResult.Value.MoveTo(toPathWithFileName);
             return Result.Ok();
         }
         catch (Exception e)
@@ -86,20 +86,19 @@ public class MemberFileService(IFileStore fileStore, ILogger<MemberFileService> 
     {
         try
         {
-            var path = fileStore.GetTargetPath(DirectoryType.Member, directoryId,
-                targetPath);
             if (!fileName.IsFileName())
             {
                 return Result.Fail(new BadRequestError().CausedBy($"wrong file name : {fileName}"));
             }
-            if (!File.Exists(path))
+            
+            var findResult = fileStore.GetFileInfo(DirectoryType.Member, directoryId,
+                targetPath);
+            if (findResult.IsFailed)
             {
-                return Result.Fail(new NotFoundError().CausedBy($"file not found"));
+                return Result.Fail(new NotFoundError().CausedBy(findResult.Errors));
             }
-
-            var directory = Path.GetDirectoryName(path);
-            var changeFilePath = Path.Combine(directory!, fileName);
-            File.Move(path, changeFilePath);
+            var changeFilePath = Path.Combine(findResult.Value.DirectoryName!, fileName);
+            findResult.Value.MoveTo(changeFilePath);
             return Result.Ok();
         }
         catch (Exception e)
@@ -113,14 +112,13 @@ public class MemberFileService(IFileStore fileStore, ILogger<MemberFileService> 
     {
         try
         {
-            var path = fileStore.GetTargetPath(DirectoryType.Member, directoryId,
+            var findResult = fileStore.GetFileInfo(DirectoryType.Member, directoryId,
                 targetPath);
-            if (!File.Exists(path))
+            if (findResult.IsFailed)
             {
-                return Result.Fail(new NotFoundError().CausedBy("file not found"));
+                return Result.Fail(new NotFoundError().CausedBy(findResult.Errors));
             }
-
-            File.Delete(path);
+            findResult.Value.Delete();
             return Result.Ok();
         }
         catch (Exception e)
