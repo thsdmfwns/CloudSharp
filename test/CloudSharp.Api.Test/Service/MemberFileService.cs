@@ -26,7 +26,7 @@ public class MemberFileService
         _directoryPathStore = new DirectoryPathStore("/tmp/cloud_sharp"); 
         _memberDirectoryId = Guid.NewGuid();
         _memberDirectoryPath =
-            _directoryPathStore.GetTargetPath(TargetFileDirectoryType.Member, _memberDirectoryId, "");
+            _directoryPathStore.GetTargetPath(DirectoryType.Member, _memberDirectoryId, "");
         _faker = new Faker();
         Directory.CreateDirectory(Path.Combine(_memberDirectoryPath, FolderName));
     }
@@ -103,7 +103,7 @@ public class MemberFileService
         if (errorType is null)
         {
             Assert.That(moveResult.IsSuccess, Is.True);
-            var movedFilePath = _directoryPathStore.GetTargetPath(TargetFileDirectoryType.Member, directoryId,
+            var movedFilePath = _directoryPathStore.GetTargetPath(DirectoryType.Member, directoryId,
                 Path.Combine(toFolderPath, fileName));
             Assert.That(File.Exists(movedFilePath), Is.True);
             return;
@@ -129,12 +129,35 @@ public class MemberFileService
         if (errorType is null)
         {
             Assert.That(renameResult.IsSuccess, Is.True);
-            var renamedFilePath = _directoryPathStore.GetTargetPath(TargetFileDirectoryType.Member, directoryId, fileName);
+            var renamedFilePath = _directoryPathStore.GetTargetPath(DirectoryType.Member, directoryId, fileName);
             Assert.That(File.Exists(renamedFilePath), Is.True);
             return;
         }
         //fail
         Assert.That(renameResult.IsFailed, Is.True);
         Assert.That(renameResult.HasError(x => x.GetType() == errorType), Is.True);
+    }
+
+    [Test]
+    [TestCase(null, null, null)]
+    [TestCase(null, "not_file", typeof(NotFoundError))] // wrong target
+    [TestCase("", null, typeof(NotFoundError))] // wrong id
+    public void RemoveFile(string? directoryIdString, string? targetPath, Type? errorType)
+    {
+        var directoryId = directoryIdString?.ToGuid() ?? _memberDirectoryId;
+        targetPath ??= _fileInDirectory;
+        
+        
+        var removeResult = _memberFileService.RemoveFile(directoryId, targetPath);
+        if (errorType is null)
+        {
+            Assert.That(removeResult.IsSuccess, Is.True);
+            var removedFilePath = _directoryPathStore.GetTargetPath(DirectoryType.Member, directoryId, targetPath);
+            Assert.That(File.Exists(removedFilePath), Is.False);
+            return;
+        }
+        //fail
+        Assert.That(removeResult.IsFailed, Is.True);
+        Assert.That(removeResult.HasError(x => x.GetType() == errorType), Is.True);
     }
 }
