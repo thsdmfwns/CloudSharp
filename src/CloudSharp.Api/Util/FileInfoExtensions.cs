@@ -2,7 +2,7 @@ using CloudSharp.Share.DTO;
 
 namespace CloudSharp.Api.Util;
 
-public static class FileInfoDtoExtensions
+public static class FileInfoExtensions
 {
     public static FileInfoDto ToDto(this FileInfo fileInfo, string directoryPath)
         => new() {
