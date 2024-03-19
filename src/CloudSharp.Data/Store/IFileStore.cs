@@ -1,6 +1,6 @@
 using CloudSharp.Share.Enum;
 
-namespace CloudSharp.Api.Store;
+namespace CloudSharp.Data.Store;
 
 public interface IFileStore
 {

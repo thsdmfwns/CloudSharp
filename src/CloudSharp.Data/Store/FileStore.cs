@@ -1,7 +1,6 @@
-using CloudSharp.Api.Service;
 using CloudSharp.Share.Enum;
 
-namespace CloudSharp.Api.Store;
+namespace CloudSharp.Data.Store;
 
 public class FileStore : IFileStore
 {

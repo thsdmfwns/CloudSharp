@@ -1,11 +1,10 @@
 using Bogus;
 using CloudSharp.Api.Error;
 using CloudSharp.Api.Service;
-using CloudSharp.Api.Store;
 using CloudSharp.Api.Test.Util;
+using CloudSharp.Data.Store;
 using CloudSharp.Share.Enum;
 using Microsoft.Extensions.Logging.Abstractions;
-using NUnit.Framework.Internal;
 
 namespace CloudSharp.Api.Test.Service;
 
