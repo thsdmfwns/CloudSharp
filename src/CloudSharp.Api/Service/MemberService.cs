@@ -77,8 +77,7 @@ public class MemberService(IMemberRepository memberRepository, ILogger<MemberSer
                 return Result.Fail(new ConflictError().CausedBy("id exist"));
             }
 
-            var emailValidate = new EmailAddressAttribute();
-            if (! emailValidate.IsValid(email))
+            if (!email.IsEmail())
             {
                 return Result.Fail(new BadRequestError().CausedBy("bad email"));
             }

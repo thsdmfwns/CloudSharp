@@ -66,8 +66,12 @@ public class MemberFileService(IDirectoryPathStore _directoryPathStore, ILogger<
             {
                 return Result.Fail(new NotFoundError().CausedBy("folder or file not found"));
             }
+            if (!fileName.IsFileName())
+            {
+                return Result.Fail(new BadRequestError().CausedBy($"wrong file name : {fileName}"));
+            }
             var toPathWithFileName = Path.Combine(toPath, fileName);
-            ;       File.Move(fromPath, toPathWithFileName, true);
+            File.Move(fromPath, toPathWithFileName, true);
             return Result.Ok();
         }
         catch (Exception e)
@@ -84,9 +88,13 @@ public class MemberFileService(IDirectoryPathStore _directoryPathStore, ILogger<
         {
             var path = _directoryPathStore.GetTargetPath(TargetFileDirectoryType.Member, directoryId,
                 targetPath);
+            if (!fileName.IsFileName())
+            {
+                return Result.Fail(new BadRequestError().CausedBy($"wrong file name : {fileName}"));
+            }
             if (!File.Exists(path))
             {
-                return Result.Fail(new NotFoundError().CausedBy("file not found"));
+                return Result.Fail(new NotFoundError().CausedBy($"file not found"));
             }
 
             var directory = Path.GetDirectoryName(path);
