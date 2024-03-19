@@ -67,9 +67,8 @@ public class MemberFileService
     [TestCase(null, null, null, true)] //in folder success
     [TestCase("", null,  typeof(NotFoundError))] // wrong id
     [TestCase(null, "not_file",  typeof(NotFoundError))] // wrong file
-    public void GetFile(string? directoryIdString, string? targetPath, Type? errorType, bool isInFolder = false)
+    public void GetFile(string? directoryIdString, string? targetPath,  Type? errorType, bool isInFolder = false)
     {
-        
         var directoryId = directoryIdString?.ToGuid() ?? _memberDirectoryId;
         targetPath ??= isInFolder ? _fileInFolder : _fileInDirectory;
         var findResult = _memberFileService.GetFile(directoryId, targetPath);
@@ -82,5 +81,35 @@ public class MemberFileService
         //fail
         Assert.That(findResult.IsFailed, Is.True);
         Assert.That(findResult.HasError(x => x.GetType() == errorType), Is.True);
+    }
+
+    [Test]
+    [TestCase(null, null, null, null, null)] //success
+    [TestCase(null, null, null, "file.txt", null)] //change file name
+    [TestCase("", null, null, null, typeof(NotFoundError))] //wrong id
+    [TestCase(null, "not_file", null, null, typeof(NotFoundError))] //wrong target
+    [TestCase(null, null, "not_folder", null, typeof(NotFoundError))] //wrong folder
+    [TestCase(null, null, null, " ", typeof(BadRequestError))] //wrong filename
+    [TestCase(null, null, null, "not/file", typeof(BadRequestError))] //wrong filename
+    public void MoveFile(string? directoryIdString, string? targetPath, string? toFolderPath, string? fileName, Type? errorType)
+    {
+        
+        var directoryId = directoryIdString?.ToGuid() ?? _memberDirectoryId;
+        targetPath ??= _fileInDirectory;
+        toFolderPath ??= FolderName;
+        fileName ??= Path.GetFileName(_fileInDirectory);
+        
+        var moveResult = _memberFileService.MoveFile(directoryId, targetPath, toFolderPath, fileName);
+        if (errorType is null)
+        {
+            Assert.That(moveResult.IsSuccess, Is.True);
+            var movedFilePath = _directoryPathStore.GetTargetPath(TargetFileDirectoryType.Member, directoryId,
+                Path.Combine(toFolderPath, fileName));
+            Assert.That(File.Exists(movedFilePath), Is.True);
+            return;
+        }
+        //fail
+        Assert.That(moveResult.IsFailed, Is.True);
+        Assert.That(moveResult.HasError(x => x.GetType() == errorType), Is.True);
     }
 }
