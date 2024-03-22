@@ -134,32 +134,91 @@ public class MemberFileService(IFileStore fileStore, ILogger<MemberFileService> 
     
     public Result<List<FolderInfoDto>> GetFolders(Guid directoryId, string? targetFolderPath)
     {
-        throw new NotImplementedException();
+        var findResult = fileStore.GetDirectoryInfo(DirectoryType.Member, directoryId, targetFolderPath ?? "");
+        if (findResult.IsFailed)
+        {
+            return Result.Fail(new NotFoundError().CausedBy(findResult.Errors));
+        }
+
+        return findResult.Value.GetDirectories().Select(x => x.ToFolderInfoDto(MemberDirectoryPath)).ToList();
     }
 
     public Result<FolderInfoDto> GetFolder(Guid directoryId, string targetPath)
     {
-        throw new NotImplementedException();
+        var findResult = fileStore.GetDirectoryInfo(DirectoryType.Member, directoryId, targetPath);
+        if (findResult.IsFailed)
+        {
+            return Result.Fail(new NotFoundError().CausedBy(findResult.Errors));
+        }
+
+        return findResult.Value.ToFolderInfoDto(MemberDirectoryPath);
     }
 
     public Result MoveFolder(Guid directoryId, string targetPath, string? toFolderPath)
     {
-        throw new NotImplementedException();
+        var fromFindResult = fileStore.GetDirectoryInfo(DirectoryType.Member, directoryId, targetPath);
+        var toFindResult = fileStore.GetDirectoryInfo(DirectoryType.Member, directoryId, toFolderPath ?? "");
+        if (fromFindResult.IsFailed || toFindResult.IsFailed)
+        {
+            return Result.Fail(new NotFoundError().CausedBy("folder not found"));
+        }
+        fromFindResult.Value.MoveTo(toFindResult.Value.FullName);
+        return Result.Ok();
     }
 
     public Result RenameFolder(Guid directoryId, string targetPath, string folderName)
     {
-        throw new NotImplementedException();
+        if (!folderName.IsFolderName())
+        {
+            return Result.Fail(new BadRequestError().CausedBy($"wrong folderName : {folderName}"));
+        }
+        
+        var findResult = fileStore.GetDirectoryInfo(DirectoryType.Member, directoryId, targetPath);
+        if (findResult.IsFailed)
+        {
+            return Result.Fail(new NotFoundError().CausedBy(findResult.Errors));
+        }
+
+        
+        var changeFolderPath = Path.Combine(findResult.Value.Parent!.FullName, folderName);
+        Directory.CreateDirectory(Path.Combine(changeFolderPath, ".."));
+        
+        return Result.OkIf(Directory.Exists(changeFolderPath), new ConflictError().CausedBy("folder exist"));
     }
 
     public Result RemoveFolder(Guid directoryId, string targetPath)
     {
-        throw new NotImplementedException();
+        var findResult = fileStore.GetDirectoryInfo(DirectoryType.Member, directoryId, targetPath);
+        if (findResult.IsFailed)
+        {
+            return Result.Fail(new NotFoundError().CausedBy(findResult.Errors));
+        }
+        findResult.Value.Delete(true);
+        return Result.Ok();
     }
 
     public Result MakeFolder(Guid directoryId, string? targetFolderPath, string folderName)
     {
-        throw new NotImplementedException();
+        if (!folderName.IsFolderName())
+        {
+            return Result.Fail(new BadRequestError().CausedBy($"wrong folder name : {folderName}"));
+        }
+        
+        var findResult = fileStore.GetDirectoryInfo(DirectoryType.Member, directoryId, targetFolderPath ?? "");
+        if (findResult.IsFailed)
+        {
+            return Result.Fail(new NotFoundError().CausedBy(findResult.Errors));
+        }
+
+        var makeFolderPath = Path.Combine(findResult.Value.FullName, folderName);
+        
+        if (Directory.Exists(makeFolderPath))
+        {
+            return Result.Fail(new ConflictError().CausedBy("exist folder"));
+        }
+        
+        Directory.CreateDirectory(Path.Combine(findResult.Value.FullName, folderName));
+        return Result.Ok();
     }
 
     #endregion
