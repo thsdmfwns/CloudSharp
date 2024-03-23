@@ -199,8 +199,14 @@ public class MemberFileService(IFileStore fileStore, ILogger<MemberFileService> 
         
         var changeFolderPath = Path.Combine(findResult.Value.Parent!.FullName, folderName);
         Directory.CreateDirectory(Path.Combine(changeFolderPath, ".."));
+
+        if (Directory.Exists(changeFolderPath))
+        {
+            new ConflictError().CausedBy("folder exist");
+        }
         
-        return Result.OkIf(Directory.Exists(changeFolderPath), new ConflictError().CausedBy("folder exist"));
+        findResult.Value.MoveTo(changeFolderPath);
+        return Result.Ok();
     }
 
     public Result RemoveFolder(Guid directoryId, string targetPath)
