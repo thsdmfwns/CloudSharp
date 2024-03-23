@@ -18,7 +18,4 @@ public interface IMemberFileService
     Result RenameFolder(Guid directoryId, string targetPath, string folderName);
     Result RemoveFolder(Guid directoryId, string targetPath);
     Result MakeFolder(Guid directoryId, string? targetFolderPath, string folderName);
-            
-    Result<FileStreamTicket> GetFileStreamTicket(Guid directoryId, string targetPath);
-    Result<FileUploadTicket> GetFileUploadTicket(Guid directoryId, string? targetFolderPath, string filename);
 }
