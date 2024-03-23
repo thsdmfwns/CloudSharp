@@ -5,7 +5,7 @@ using CloudSharp.Share.Enum;
 
 namespace CloudSharp.Data.Ticket;
 
-public class FileUploadTicket : ITicket<FileUploadTicket>
+public record FileUploadTicket : ITicket<FileUploadTicket>
 {
     public required string TargetFileName { get; init; }
     public required string? TargetFolderPath { get; init; }

@@ -2,7 +2,7 @@ using CloudSharp.Share.Enum;
 
 namespace CloudSharp.Share.DTO;
 
-public class FileInfoDto
+public record FileInfoDto
 {
     public required string Name { get; set; }
     public required string? Extension { get; set; }

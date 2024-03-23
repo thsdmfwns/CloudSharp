@@ -1,6 +1,6 @@
 namespace CloudSharp.Share.DTO;
 
-public class FolderInfoDto
+public record FolderInfoDto
 {
     public required string Name { get; set; }
     public required long LastWriteTime { get; set; }

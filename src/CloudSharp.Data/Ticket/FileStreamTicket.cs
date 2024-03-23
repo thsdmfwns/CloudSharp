@@ -6,7 +6,7 @@ using Microsoft.VisualBasic;
 
 namespace CloudSharp.Data.Ticket;
 
-public class FileStreamTicket : ITicket<FileStreamTicket>
+public record FileStreamTicket : ITicket<FileStreamTicket>
 {
     public required string TargetFilePath { get; init; }
     public required Guid TargetFileDirectoryId { get; init; }
