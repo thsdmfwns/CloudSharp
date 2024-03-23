@@ -1,5 +1,6 @@
 using System.Text.Json;
 using CloudSharp.Data.EntityFramework.Entities;
+using CloudSharp.Share.DTO;
 using CloudSharp.Share.Enum;
 
 namespace CloudSharp.Data.Ticket;
@@ -10,9 +11,9 @@ public class FileUploadTicket : ITicket<FileUploadTicket>
     public required string? TargetFolderPath { get; init; }
     public required Guid TargetFileDirectoryId { get; init; }
     public required DirectoryType DirectoryType { get; init; }
-    public DateTimeOffset? ExpireTime { get; init; }
-    public Guid Token { get; init; }
-    public Member? TicketOwner { get; init; }
+    public DateTimeOffset? ExpireTime { get; init; } = DateTimeOffset.Now.AddMinutes(3);
+    public Guid Token { get; init; } = Guid.NewGuid();
+    public required MemberDto? TicketOwner { get; init; }
     public static FileUploadTicket? FromJson(string? json)
     {
         return json is null
