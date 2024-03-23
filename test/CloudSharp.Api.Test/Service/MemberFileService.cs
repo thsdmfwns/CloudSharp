@@ -13,7 +13,9 @@ public class MemberFileService
     private IMemberFileService _memberFileService = null!;
     private Guid _memberDirectoryId;
     private string _memberDirectoryPath = null!;
-    const string FolderName  = "Folder";
+    const string _folderName  = "Folder";
+    const string _emptyFolderName  = "EmptyFolder";
+    const string _volumePath  = "/tmp/cloud_sharp";
     private IFileStore _fileStore = null!;
     private Faker _faker = null!;
     private string _fileInDirectory = null!;
@@ -22,12 +24,16 @@ public class MemberFileService
     [OneTimeSetUp]
     public void OneTimeSetUp()
     {
-        _fileStore = new FileStore("/tmp/cloud_sharp"); 
+        if (Directory.Exists(_volumePath))
+        {
+            Directory.Delete(_volumePath, true);
+        }
+        _fileStore = new FileStore(_volumePath); 
         _memberDirectoryId = Guid.NewGuid();
         _memberDirectoryPath =
             _fileStore.GetTargetPath(DirectoryType.Member, _memberDirectoryId, "");
         _faker = new Faker();
-        Directory.CreateDirectory(Path.Combine(_memberDirectoryPath, FolderName));
+        Directory.CreateDirectory(Path.Combine(_memberDirectoryPath, _folderName));
     }
 
     [SetUp]
@@ -36,14 +42,15 @@ public class MemberFileService
         _memberFileService =
             new Api.Service.MemberFileService(_fileStore, NullLogger<Api.Service.MemberFileService>.Instance);
         Directory.Delete(_memberDirectoryPath, true);
-        Directory.CreateDirectory(Path.Combine(_memberDirectoryPath, FolderName));
+        Directory.CreateDirectory(Path.Combine(_memberDirectoryPath, _folderName));
+        Directory.CreateDirectory(Path.Combine(_memberDirectoryPath, _emptyFolderName));
         _fileInDirectory = _faker.MakeFakeFile(_memberDirectoryPath, null);
-        _fileInFolder = _faker.MakeFakeFile(_memberDirectoryPath, FolderName);
+        _fileInFolder = _faker.MakeFakeFile(_memberDirectoryPath, _folderName);
     }
 
     [Test]
     [TestCase(null, null, null)] //success
-    [TestCase(null, FolderName, null)] // in folder success
+    [TestCase(null, _folderName, null)] // in folder success
     [TestCase("", null,  typeof(NotFoundError))] // wrong id
     [TestCase(null, "not_folder",  typeof(NotFoundError))] // wrong folder
     public void GetFiles(string? directoryIdString, string? targetFolderPath, Type? errorType)
@@ -95,7 +102,7 @@ public class MemberFileService
         
         var directoryId = directoryIdString?.ToGuid() ?? _memberDirectoryId;
         targetPath ??= _fileInDirectory;
-        toFolderPath ??= FolderName;
+        toFolderPath ??= _folderName;
         fileName ??= Path.GetFileName(_fileInDirectory);
         
         var moveResult = _memberFileService.MoveFile(directoryId, targetPath, toFolderPath, fileName);
@@ -158,5 +165,161 @@ public class MemberFileService
         //fail
         Assert.That(removeResult.IsFailed, Is.True);
         Assert.That(removeResult.HasError(x => x.GetType() == errorType), Is.True);
+    }
+
+
+    [Test]
+    [TestCase(null, null, null)] // success
+    [TestCase("", null, typeof(NotFoundError))] // wrong id
+    [TestCase(null, "not_folder", typeof(NotFoundError))] // wrong folder
+    public void GetFolders(string? directoryIdString, string? targetFolderPath, Type? errorType)
+    {
+        var directoryId = directoryIdString?.ToGuid() ?? _memberDirectoryId;
+
+        var findResult = _memberFileService.GetFolders(directoryId, targetFolderPath);
+        
+        if (errorType is null)
+        {
+            Assert.That(findResult.IsSuccess, Is.True);
+            var findFolder = _fileStore.GetDirectoryInfo(DirectoryType.Member, directoryId, targetFolderPath ?? "");
+            Assert.That(findFolder.Value.GetDirectories().Length, Is.EqualTo(findResult.Value.Count));
+            return;
+        }
+        
+        //fail
+        Assert.That(findResult.IsFailed, Is.True);
+        Assert.That(findResult.HasError(x => x.GetType() == errorType), Is.True);
+    }
+
+    [Test]
+    [TestCase(null, null, null)] // success
+    [TestCase("", null, typeof(NotFoundError))] // wrong id
+    [TestCase(null, "not_folder", typeof(NotFoundError))] // wrong folder
+
+    public void GetFolder(string? directoryIdString, string? targetPath, Type? errorType)
+    {
+        var directoryId = directoryIdString?.ToGuid() ?? _memberDirectoryId;
+        targetPath ??= _folderName;
+        var findResult = _memberFileService.GetFolder(directoryId, targetPath);
+        
+        if (errorType is null)
+        {
+            Assert.That(findResult.IsSuccess, Is.True);
+            var findFolder = _fileStore.GetDirectoryInfo(DirectoryType.Member, directoryId, targetPath ?? "");
+            Assert.That(findFolder.Value.Exists, Is.True);
+            return;
+        }
+        
+        //fail
+        Assert.That(findResult.IsFailed, Is.True);
+        Assert.That(findResult.HasError(x => x.GetType() == errorType), Is.True);
+    }
+
+    [Test]
+    [TestCase(null, null, null, null)] //success
+    [TestCase("", null, null, typeof(NotFoundError))] //wrong id
+    [TestCase(null, "not_folder", null, typeof(NotFoundError))] //wrong target
+    [TestCase(null, null, "not_folder", typeof(NotFoundError))] //wrong to
+    [TestCase(null, null, "", typeof(ConflictError))] //exist folder
+    [TestCase(null, "", null, typeof(BadRequestError))] //empty target
+    public void MoveFolder(string? directoryIdString, string? targetPath, string? toFolderPath, Type? errorType)
+    {
+        var directoryId = directoryIdString?.ToGuid() ?? _memberDirectoryId;
+        targetPath ??= _folderName;
+        toFolderPath ??= _emptyFolderName;
+        var moveResult = _memberFileService.MoveFolder(directoryId, targetPath, toFolderPath);
+
+        if (errorType is null)
+        {
+            Assert.That(moveResult.IsSuccess, Is.True);
+            var toFolder = _fileStore.GetDirectoryInfo(DirectoryType.Member, directoryId, toFolderPath);
+            Assert.That(toFolder.Value.GetDirectories().Any(x => x.Name == _folderName), Is.True);
+            return;
+        }
+        
+        //fail
+        Assert.That(moveResult.IsFailed, Is.True);
+        Assert.That(moveResult.HasError(x => x.GetType() == errorType), Is.True);
+    }
+
+    [Test]
+    [TestCase(null, null, null, null)] //success
+    [TestCase(null, null, "new/folder", null)] //path folder name
+    [TestCase("", null, null, typeof(NotFoundError))] //wrong id
+    [TestCase(null, "", null, typeof(BadRequestError))] //empty target
+    [TestCase(null, "not_folder", null, typeof(NotFoundError))] //wrong target
+    [TestCase(null, null, "", typeof(BadRequestError))] //wrong name
+    public void RenameFolder(string? directoryIdString, string? targetPath, string? folderName, Type? errorType)
+    {
+        const string changeFolderName = "NewFolder";
+        var directoryId = directoryIdString?.ToGuid() ?? _memberDirectoryId;
+        targetPath ??= _folderName;
+        folderName ??= changeFolderName;
+
+        var renameResult = _memberFileService.RenameFolder(directoryId, targetPath, folderName);
+        
+        if (errorType is null)
+        {
+            Assert.That(renameResult.IsSuccess, Is.True);
+            var directory = _fileStore.GetDirectoryInfo(DirectoryType.Member, directoryId, Path.Combine(folderName, ".."));
+            Assert.That(directory.Value.GetDirectories().Any(x => x.Name == Path.GetFileName(folderName)), Is.True);
+            return;
+        }
+        
+        //fail
+        Assert.That(renameResult.IsFailed, Is.True);
+        Assert.That(renameResult.HasError(x => x.GetType() == errorType), Is.True);
+    }
+
+    [Test]
+    [TestCase(null, null, null)] //success
+    [TestCase("", null, typeof(NotFoundError))] //wrong id
+    [TestCase(null, "", typeof(BadRequestError))] //empty target
+    [TestCase(null, "not_folder", typeof(NotFoundError))] //wrong target
+    public void RemoveFolder(string? directoryIdString, string? targetPath, Type? errorType)
+    {
+        var directoryId = directoryIdString?.ToGuid() ?? _memberDirectoryId;
+        targetPath ??= _folderName;
+
+        var removeResult = _memberFileService.RemoveFolder(directoryId, targetPath);
+            
+        if (errorType is null)
+        {
+            Assert.That(removeResult.IsSuccess, Is.True);
+            var directory = _fileStore.GetDirectoryInfo(DirectoryType.Member, directoryId, Path.Combine(targetPath, ".."));
+            Assert.That(directory.Value.GetDirectories().Any(x => x.Name == targetPath), Is.False);
+            return;
+        }
+        
+        //fail
+        Assert.That(removeResult.IsFailed, Is.True);
+        Assert.That(removeResult.HasError(x => x.GetType() == errorType), Is.True);
+    }
+
+    [Test]
+    [TestCase(null, null, null, null)] //success
+    [TestCase("", null, null, typeof(NotFoundError))] //wrong id
+    [TestCase(null, "not_folder", null, typeof(NotFoundError))] //wrong target
+    [TestCase(null, null, "", typeof(BadRequestError))] //wrong name
+    public void MakeFolder(string? directoryIdString, string? targetFolderPath, string? folderName, Type? errorType)
+    {
+        const string makeFolderName = "NewFolder";
+        var directoryId = directoryIdString?.ToGuid() ?? _memberDirectoryId;
+        targetFolderPath ??= _folderName;
+        folderName ??= makeFolderName;
+
+        var makeResult = _memberFileService.MakeFolder(directoryId, targetFolderPath, folderName);
+        
+        if (errorType is null)
+        {
+            Assert.That(makeResult.IsSuccess, Is.True);
+            var directory = _fileStore.GetDirectoryInfo(DirectoryType.Member, directoryId, targetFolderPath);
+            Assert.That(directory.Value.GetDirectories().Any(x => x.Name == folderName), Is.True);
+            return;
+        }
+        
+        //fail
+        Assert.That(makeResult.IsFailed, Is.True);
+        Assert.That(makeResult.HasError(x => x.GetType() == errorType), Is.True);
     }
 }
