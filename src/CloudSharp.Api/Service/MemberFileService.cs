@@ -162,7 +162,14 @@ public class MemberFileService(IFileStore fileStore, ILogger<MemberFileService> 
         {
             return Result.Fail(new NotFoundError().CausedBy("folder not found"));
         }
-        fromFindResult.Value.MoveTo(toFindResult.Value.FullName);
+
+        var destDirPath = Path.Combine(toFindResult.Value.FullName, fromFindResult.Value.Name);
+        if (Directory.Exists(destDirPath))
+        {
+            return Result.Fail(new ConflictError().CausedBy("folder exist"));
+        }
+        
+        fromFindResult.Value.MoveTo(destDirPath);
         return Result.Ok();
     }
 
