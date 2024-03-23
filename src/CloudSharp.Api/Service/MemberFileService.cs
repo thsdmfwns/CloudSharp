@@ -156,6 +156,11 @@ public class MemberFileService(IFileStore fileStore, ILogger<MemberFileService> 
 
     public Result MoveFolder(Guid directoryId, string targetPath, string? toFolderPath)
     {
+        if (string.IsNullOrWhiteSpace(targetPath))
+        {
+            return Result.Fail(new BadRequestError().CausedBy("empty target path"));
+        }
+        
         var fromFindResult = fileStore.GetDirectoryInfo(DirectoryType.Member, directoryId, targetPath);
         var toFindResult = fileStore.GetDirectoryInfo(DirectoryType.Member, directoryId, toFolderPath ?? "");
         if (fromFindResult.IsFailed || toFindResult.IsFailed)
@@ -175,6 +180,11 @@ public class MemberFileService(IFileStore fileStore, ILogger<MemberFileService> 
 
     public Result RenameFolder(Guid directoryId, string targetPath, string folderName)
     {
+        if (string.IsNullOrWhiteSpace(targetPath))
+        {
+            return Result.Fail(new BadRequestError().CausedBy("empty target path"));
+        }
+        
         if (!folderName.IsFolderName())
         {
             return Result.Fail(new BadRequestError().CausedBy($"wrong folderName : {folderName}"));
@@ -195,6 +205,11 @@ public class MemberFileService(IFileStore fileStore, ILogger<MemberFileService> 
 
     public Result RemoveFolder(Guid directoryId, string targetPath)
     {
+        if (string.IsNullOrWhiteSpace(targetPath))
+        {
+            return Result.Fail(new BadRequestError().CausedBy("empty target path"));
+        }
+        
         var findResult = fileStore.GetDirectoryInfo(DirectoryType.Member, directoryId, targetPath);
         if (findResult.IsFailed)
         {
@@ -229,20 +244,5 @@ public class MemberFileService(IFileStore fileStore, ILogger<MemberFileService> 
     }
 
     #endregion
-
-    #region Ticket
-
-    public Result<FileStreamTicket> GetFileStreamTicket(Guid directoryId, string targetPath)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Result<FileUploadTicket> GetFileUploadTicket(Guid directoryId, string? targetFolderPath, string filename)
-    {
-        throw new NotImplementedException();
-    }
-
-    #endregion
-  
    
 }
