@@ -219,7 +219,7 @@ public class MemberFileService
     [TestCase(null, null, null, null)] //success
     [TestCase("", null, null, typeof(NotFoundError))] //wrong id
     [TestCase(null, "not_folder", null, typeof(NotFoundError))] //wrong target
-    [TestCase(null, null, "not_folder", typeof(NotFoundError))] //wrong to
+    [TestCase(null, null, "not_folder", typeof(NotFoundError))] //wrong dest
     [TestCase(null, null, "", typeof(ConflictError))] //exist folder
     [TestCase(null, "", null, typeof(BadRequestError))] //empty target
     public void MoveFolder(string? directoryIdString, string? targetPath, string? toFolderPath, Type? errorType)
@@ -300,6 +300,7 @@ public class MemberFileService
     [TestCase(null, null, null, null)] //success
     [TestCase("", null, null, typeof(NotFoundError))] //wrong id
     [TestCase(null, "not_folder", null, typeof(NotFoundError))] //wrong target
+    [TestCase(null, "..", null, typeof(BadRequestError))] //wrong target
     [TestCase(null, null, "", typeof(BadRequestError))] //wrong name
     public void MakeFolder(string? directoryIdString, string? targetFolderPath, string? folderName, Type? errorType)
     {

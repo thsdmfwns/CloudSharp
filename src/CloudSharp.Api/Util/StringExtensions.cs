@@ -6,10 +6,12 @@ namespace CloudSharp.Api.Util;
 public static class StringExtensions
 {
     public static bool IsFileName(this string filename)
-        => filename.IndexOfAny(Path.GetInvalidFileNameChars()) == -1 && !string.IsNullOrWhiteSpace(filename);
+        =>  !string.IsNullOrWhiteSpace(filename)
+            && filename.IndexOfAny(Path.GetInvalidFileNameChars()) == -1;
 
     public static bool IsFolderName(this string folderName)
-        => folderName.IndexOfAny(Path.GetInvalidPathChars()) == -1 && !string.IsNullOrWhiteSpace(folderName);
+        =>  !string.IsNullOrWhiteSpace(folderName)
+            && folderName.IndexOfAny(Path.GetInvalidPathChars()) == -1;
     
     public static bool IsEmail(this string email)
     {

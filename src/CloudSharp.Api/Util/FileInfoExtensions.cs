@@ -12,4 +12,7 @@ public static class FileInfoExtensions
             Size = fileInfo.Length,
             Path = fileInfo.FullName[directoryPath.Length..].TrimStart('/'),
         };
+
+    public static bool DirectoryExist(this FileInfo fileInfo)
+        => fileInfo.Directory?.Exists ?? false;
 }

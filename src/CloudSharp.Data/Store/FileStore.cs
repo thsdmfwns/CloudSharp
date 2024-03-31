@@ -18,11 +18,12 @@ public class FileStore : IFileStore
     public string GuildDirectoryPath => Path.Combine(VolumePath, "guild");
     public Result<FileInfo> GetFileInfo(DirectoryType directoryType, Guid directoryId, string targetPath)
     {
+        var directoryPath = GetTargetPath(directoryType, directoryId, "");
         var filePath = GetTargetPath(directoryType, directoryId, targetPath);
         var fileInfo = new FileInfo(filePath);
-        if (!fileInfo.Exists)
+        if (!fileInfo.FullName.StartsWith(directoryPath))
         {
-            return FluentResults.Result.Fail("file not found");
+            return FluentResults.Result.Fail("Invalid target file");
         }
 
         return fileInfo;
@@ -30,11 +31,12 @@ public class FileStore : IFileStore
 
     public Result<DirectoryInfo> GetDirectoryInfo(DirectoryType directoryType, Guid directoryId, string targetPath)
     {
+        var directoryPath = GetTargetPath(directoryType, directoryId, "");
         var filePath = GetTargetPath(directoryType, directoryId, targetPath);
         var directoryInfo = new DirectoryInfo(filePath);
-        if (!directoryInfo.Exists)
+        if (!directoryInfo.FullName.StartsWith(directoryPath))
         {
-            return FluentResults.Result.Fail("file not found");
+            return FluentResults.Result.Fail("Invalid target file");
         }
         return directoryInfo;
     }

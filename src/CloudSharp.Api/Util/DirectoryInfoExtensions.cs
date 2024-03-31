@@ -13,4 +13,7 @@ public static class DirectoryInfoExtensions
             LastWriteTime = directoryInfo.LastWriteTime.ToUniversalTime().Ticks
         };
     }
+
+    public static bool ParentDirectoryExist(this DirectoryInfo directoryInfo)
+        => directoryInfo.Parent?.Exists ?? false;
 }
