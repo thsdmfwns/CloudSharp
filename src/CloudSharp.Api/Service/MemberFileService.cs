@@ -63,17 +63,17 @@ public class MemberFileService(IFileStore fileStore, ILogger<MemberFileService> 
         }
     }
 
-    public Result MoveFile(Guid directoryId, string targetPath, string? toFolderPath, string fileName)
+    public Result MoveFile(Guid directoryId, string targetPath, string destPath)
     {
         try
         {
-            if (!fileName.IsFileName())
+            if (!Path.GetFileName(destPath).IsFileName())
             {
-                return Result.Fail(new BadRequestError().CausedBy($"wrong file name : {fileName}"));
+                return Result.Fail(new BadRequestError().CausedBy($"wrong file name"));
             }
             
             var fromFIndResult = fileStore.GetFileInfo(DirectoryType.Member, directoryId, targetPath);
-            var destFindResult = fileStore.GetFileInfo(DirectoryType.Member, directoryId, Path.Combine(toFolderPath ?? ".", fileName));
+            var destFindResult = fileStore.GetFileInfo(DirectoryType.Member, directoryId, destPath);
             if (fromFIndResult.IsFailed || destFindResult.IsFailed)
             {
                 return Result.Fail(new BadRequestError().CausedBy("invalid Path"));
@@ -105,26 +105,9 @@ public class MemberFileService(IFileStore fileStore, ILogger<MemberFileService> 
         {
             if (!fileName.IsFileName())
             {
-                return Result.Fail(new BadRequestError().CausedBy($"wrong file name : {fileName}"));
+                return new BadRequestError().CausedBy("Invalid file name");
             }
-            
-            var fromFindResult = fileStore.GetFileInfo(DirectoryType.Member, directoryId, targetPath);
-            var destFindResult = fileStore.GetFileInfo(DirectoryType.Member, directoryId, Path.Combine(Path.GetDirectoryName(targetPath) ?? ".", fileName));
-            if (fromFindResult.IsFailed || destFindResult.IsFailed)
-            {
-                return Result.Fail(new BadRequestError().CausedBy("invalid Path"));
-            }
-            if (!fromFindResult.Value.Exists)
-            {
-                return Result.Fail(new NotFoundError().CausedBy("file not found"));
-            }
-            if (destFindResult.Value.Exists)
-            {
-                return Result.Fail(new ConflictError().CausedBy("exist file"));
-            }
-            
-            fromFindResult.Value.MoveTo(destFindResult.Value.FullName);
-            return Result.Ok();
+            return MoveFile(directoryId, targetPath, Path.Combine(Path.GetDirectoryName(targetPath) ?? ".", fileName));
         }
         catch (Exception e)
         {
@@ -191,7 +174,7 @@ public class MemberFileService(IFileStore fileStore, ILogger<MemberFileService> 
         return findResult.Value.ToFolderInfoDto(MemberDirectoryPath);
     }
 
-    public Result MoveFolder(Guid directoryId, string targetPath, string? toFolderPath)
+    public Result MoveFolder(Guid directoryId, string targetPath, string destPath)
     {
         if (string.IsNullOrWhiteSpace(targetPath))
         {
@@ -199,8 +182,7 @@ public class MemberFileService(IFileStore fileStore, ILogger<MemberFileService> 
         }
         
         var fromFindResult = fileStore.GetDirectoryInfo(DirectoryType.Member, directoryId, targetPath);
-        var destFindResult = fileStore.GetDirectoryInfo(DirectoryType.Member, directoryId,
-            Path.Combine(toFolderPath ?? ".", Path.GetFileName(targetPath)));
+        var destFindResult = fileStore.GetDirectoryInfo(DirectoryType.Member, directoryId, destPath);
         if (fromFindResult.IsFailed || destFindResult.IsFailed)
         {
             return Result.Fail(new BadRequestError().CausedBy("invalid path"));
@@ -222,34 +204,23 @@ public class MemberFileService(IFileStore fileStore, ILogger<MemberFileService> 
 
     public Result RenameFolder(Guid directoryId, string targetPath, string folderName)
     {
-        if (string.IsNullOrWhiteSpace(targetPath))
-        {
-            return Result.Fail(new BadRequestError().CausedBy("empty target path"));
-        }
-        
         if (!folderName.IsFolderName())
         {
             return Result.Fail(new BadRequestError().CausedBy($"wrong folderName : {folderName}"));
         }
+
+        var destPath = Path.Combine(Path.GetDirectoryName(targetPath) ?? ".", folderName);
+        var destFindResult = fileStore.GetDirectoryInfo(DirectoryType.Member, directoryId, destPath);
+        if (destFindResult.IsFailed)
+        {
+            return new BadRequestError().CausedBy(destFindResult.Errors);
+        }
+        if (!destFindResult.Value.ParentDirectoryExist())
+        {
+            Directory.CreateDirectory(destFindResult.Value.Parent!.FullName);
+        }
         
-        var targetFindResult = fileStore.GetDirectoryInfo(DirectoryType.Member, directoryId, targetPath);
-        var destFindResult = fileStore.GetDirectoryInfo(DirectoryType.Member, directoryId,
-            Path.Combine(Path.GetDirectoryName(targetPath) ?? ".", folderName));
-        if (targetFindResult.IsFailed)
-        {
-            return Result.Fail(new BadRequestError().CausedBy(targetFindResult.Errors));
-        }
-        if (!targetFindResult.Value.Exists)
-        {
-            return Result.Fail(new NotFoundError().CausedBy("folder not found"));
-        }
-        if (destFindResult.Value.Exists)
-        {
-            return Result.Fail(new ConflictError().CausedBy("folder exist"));
-        }
-        Directory.CreateDirectory(Path.Combine(destFindResult.Value.FullName, ".."));
-        targetFindResult.Value.MoveTo(destFindResult.Value.FullName);
-        return Result.Ok();
+        return MoveFolder(directoryId, targetPath, destPath);
     }
 
     public Result RemoveFolder(Guid directoryId, string targetPath)
