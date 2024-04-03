@@ -1,4 +1,5 @@
 using CloudSharp.Api.Error;
+using CloudSharp.Api.Util;
 using CloudSharp.Data.Store;
 using CloudSharp.Data.Ticket;
 using CloudSharp.Share.DTO;
@@ -12,8 +13,12 @@ public class MemberTicketService(ITicketStore _ticketStore, IFileStore _fileStor
     public async ValueTask<Result<Guid>> AddFileStreamTicket(MemberDto memberDto, string targetPath)
     {
         var directoryId = Guid.Parse(memberDto.MemberId);
-        var targetFullPath = _fileStore.GetTargetPath(DirectoryType.Member, directoryId, targetPath);
-        if (!File.Exists(targetFullPath))
+        var targetFindResult = _fileStore.GetFileInfo(DirectoryType.Member, directoryId, targetPath);
+        if (targetFindResult.IsFailed)
+        {
+            return Result.Fail(new BadRequestError().CausedBy(targetFindResult.Errors));
+        }
+        if (!targetFindResult.Value.Exists)
         {
             return Result.Fail(new NotFoundError().CausedBy("file not found"));
         }
@@ -32,15 +37,23 @@ public class MemberTicketService(ITicketStore _ticketStore, IFileStore _fileStor
         }
 
         return addTicketResult.Value;
-
     }
 
     public async Task<Result<Guid>> AddFileUploadTicket(MemberDto memberDto, string? targetFolderPath, string filename)
     {
         targetFolderPath ??= string.Empty;
         var directoryId = Guid.Parse(memberDto.MemberId);
-        var targetFullPath = _fileStore.GetTargetPath(DirectoryType.Member, directoryId, Path.Combine(targetFolderPath, filename));
-        if (File.Exists(targetFullPath))
+        var targetFindResult = _fileStore.GetFileInfo(DirectoryType.Member, directoryId, Path.Combine(targetFolderPath, filename));
+        if (targetFindResult.IsFailed)
+        {
+            return Result.Fail(new BadRequestError().CausedBy(targetFindResult.Errors));
+        }
+
+        if (!targetFindResult.Value.DirectoryExist())
+        {
+            return Result.Fail(new NotFoundError().CausedBy("folder not found"));
+        }
+        if (targetFindResult.Value.Exists)
         {
             return Result.Fail(new ConflictError().CausedBy("file exist"));
         }

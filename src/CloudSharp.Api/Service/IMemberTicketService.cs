@@ -7,4 +7,5 @@ public interface IMemberTicketService
 {
     ValueTask<Result<Guid>> AddFileStreamTicket(MemberDto memberDto, string targetPath);
     Task<Result<Guid>> AddFileUploadTicket(MemberDto memberDto, string? targetFolderPath, string filename);
+    
 }
