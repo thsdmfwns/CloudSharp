@@ -96,7 +96,6 @@ public class MemberFileService
     [TestCase(null, "not_file", null, null, typeof(NotFoundError))] //wrong target
     [TestCase(null, null, "not_folder", null, typeof(NotFoundError))] //wrong folder
     [TestCase(null, null, null, " ", typeof(BadRequestError))] //wrong filename
-    [TestCase(null, null, null, "not/file", typeof(BadRequestError))] //wrong filename
     public void MoveFile(string? directoryIdString, string? targetPath, string? toFolderPath, string? fileName, Type? errorType)
     {
         
@@ -105,7 +104,7 @@ public class MemberFileService
         toFolderPath ??= _folderName;
         fileName ??= Path.GetFileName(_fileInDirectory);
         
-        var moveResult = _memberFileService.MoveFile(directoryId, targetPath, toFolderPath, fileName);
+        var moveResult = _memberFileService.MoveFile(directoryId, targetPath, Path.Combine(toFolderPath, fileName));
         if (errorType is null)
         {
             Assert.That(moveResult.IsSuccess, Is.True);
@@ -227,7 +226,8 @@ public class MemberFileService
         var directoryId = directoryIdString?.ToGuid() ?? _memberDirectoryId;
         targetPath ??= _folderName;
         toFolderPath ??= _emptyFolderName;
-        var moveResult = _memberFileService.MoveFolder(directoryId, targetPath, toFolderPath);
+        var destPath = Path.Combine(toFolderPath, Path.GetFileName(targetPath));
+        var moveResult = _memberFileService.MoveFolder(directoryId, targetPath, destPath);
 
         if (errorType is null)
         {
