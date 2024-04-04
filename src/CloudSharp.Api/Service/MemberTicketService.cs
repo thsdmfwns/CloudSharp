@@ -10,10 +10,9 @@ namespace CloudSharp.Api.Service;
 
 public class MemberTicketService(ITicketStore _ticketStore, IFileStore _fileStore, Logger<IMemberTicketService> _logger) : IMemberTicketService
 {
-    public async ValueTask<Result<Guid>> AddFileStreamTicket(MemberDto memberDto, string targetPath)
+    public async ValueTask<Result<Guid>> AddFileStreamTicket(Guid memberId, string targetPath)
     {
-        var directoryId = Guid.Parse(memberDto.MemberId);
-        var targetFindResult = _fileStore.GetFileInfo(DirectoryType.Member, directoryId, targetPath);
+        var targetFindResult = _fileStore.GetFileInfo(DirectoryType.Member, memberId, targetPath);
         if (targetFindResult.IsFailed)
         {
             return Result.Fail(new BadRequestError().CausedBy(targetFindResult.Errors));
@@ -26,9 +25,9 @@ public class MemberTicketService(ITicketStore _ticketStore, IFileStore _fileStor
         var ticket = new FileStreamTicket
         {
             TargetFilePath = targetPath,
-            TargetFileDirectoryId = directoryId,
+            TargetFileDirectoryId = memberId,
             DirectoryType = DirectoryType.Member,
-            TicketOwner = memberDto,
+            TicketOwnerId = memberId,
         };
         var addTicketResult = await _ticketStore.AddTicket(ticket);
         if (addTicketResult.IsFailed)
@@ -39,11 +38,10 @@ public class MemberTicketService(ITicketStore _ticketStore, IFileStore _fileStor
         return addTicketResult.Value;
     }
 
-    public async Task<Result<Guid>> AddFileUploadTicket(MemberDto memberDto, string? targetFolderPath, string filename)
+    public async Task<Result<Guid>> AddFileUploadTicket(Guid memberId, string? targetFolderPath, string filename)
     {
-        targetFolderPath ??= string.Empty;
-        var directoryId = Guid.Parse(memberDto.MemberId);
-        var targetFindResult = _fileStore.GetFileInfo(DirectoryType.Member, directoryId, Path.Combine(targetFolderPath, filename));
+        targetFolderPath ??= ".";
+        var targetFindResult = _fileStore.GetFileInfo(DirectoryType.Member, memberId, Path.Combine(targetFolderPath, filename));
         if (targetFindResult.IsFailed)
         {
             return Result.Fail(new BadRequestError().CausedBy(targetFindResult.Errors));
@@ -60,9 +58,9 @@ public class MemberTicketService(ITicketStore _ticketStore, IFileStore _fileStor
         
         var ticket = new FileUploadTicket
         {
-            TargetFileDirectoryId = directoryId,
+            TargetFileDirectoryId = memberId,
             DirectoryType = DirectoryType.Member,
-            TicketOwner = memberDto,
+            TicketOwnerId = memberId,
             TargetFileName = filename,
             TargetFolderPath = targetFolderPath,
         };
@@ -73,5 +71,26 @@ public class MemberTicketService(ITicketStore _ticketStore, IFileStore _fileStor
         }
 
         return addTicketResult.Value;
+    }
+
+    public async ValueTask<Result<T>> GetTicket<T>(Guid ticketToken) where T : ITicket<T>
+    {
+        var result = await _ticketStore.GetTicket<T>(ticketToken);
+        if (result.IsFailed)
+        {
+            return new NotFoundError().CausedBy(result.Errors);
+        }
+        return result.Value;
+    }
+
+    public async ValueTask<Result> DeleteTicket<T>(Guid ticketToken) where T : ITicket<T>
+    {
+        var findTicketResult = await _ticketStore.GetTicket<T>(ticketToken);
+        if (findTicketResult.IsFailed)
+        {
+            return new NotFoundError().CausedBy(findTicketResult.Errors);
+        }
+        
+        return await _ticketStore.RemoveTicket(findTicketResult.Value);
     }
 }

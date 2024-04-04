@@ -13,7 +13,7 @@ public record FileStreamTicket : ITicket<FileStreamTicket>
     public required DirectoryType DirectoryType { get; init; }
     public DateTimeOffset? ExpireTime { get; init; } = DateTime.Now.AddMinutes(3);
     public Guid Token { get; init; } = Guid.NewGuid();
-    public required MemberDto? TicketOwner { get; init; }
+    public required Guid? TicketOwnerId { get; init; }
     public static FileStreamTicket? FromJson(string? json)
     {
         return json is null
