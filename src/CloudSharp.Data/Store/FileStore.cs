@@ -23,7 +23,7 @@ public class FileStore : IFileStore
         var fileInfo = new FileInfo(filePath);
         if (!fileInfo.FullName.StartsWith(directoryPath))
         {
-            return FluentResults.Result.Fail("Invalid target file");
+            return FluentResults.Result.Fail("Invalid target");
         }
 
         return fileInfo;
@@ -36,7 +36,7 @@ public class FileStore : IFileStore
         var directoryInfo = new DirectoryInfo(filePath);
         if (!directoryInfo.FullName.StartsWith(directoryPath))
         {
-            return FluentResults.Result.Fail("Invalid target file");
+            return FluentResults.Result.Fail("Invalid target");
         }
         return directoryInfo;
     }
