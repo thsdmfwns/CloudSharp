@@ -18,4 +18,5 @@ public class Member
     public DateTime CreatedOn { get; init; } = DateTime.UtcNow;
     public DateTime? UpdatedOn { get; set; }
     public DateTime LastAccessed { get; set; }
+    public ICollection<Share> Shares { get; } = new List<Share>();
 };

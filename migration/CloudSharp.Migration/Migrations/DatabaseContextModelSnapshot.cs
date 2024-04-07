@@ -59,6 +59,54 @@ namespace CloudSharp.Data.Migrations
 
                     b.ToTable("Members");
                 });
+
+            modelBuilder.Entity("CloudSharp.Data.EntityFramework.Entities.Share", b =>
+                {
+                    b.Property<Guid>("ShareId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("ExpireTime")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<Guid>("MemberId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Password")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("UpdatedOn")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("ShareId");
+
+                    b.HasIndex("MemberId");
+
+                    b.ToTable("Shares");
+                });
+
+            modelBuilder.Entity("CloudSharp.Data.EntityFramework.Entities.Share", b =>
+                {
+                    b.HasOne("CloudSharp.Data.EntityFramework.Entities.Member", "Member")
+                        .WithMany("Shares")
+                        .HasForeignKey("MemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Member");
+                });
+
+            modelBuilder.Entity("CloudSharp.Data.EntityFramework.Entities.Member", b =>
+                {
+                    b.Navigation("Shares");
+                });
 #pragma warning restore 612, 618
         }
     }
