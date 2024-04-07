@@ -74,7 +74,7 @@ namespace CloudSharp.Data.Migrations
 
                     b.Property<string>("FilePath")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("varchar(255)");
 
                     b.Property<Guid>("MemberId")
                         .HasColumnType("char(36)");
@@ -86,6 +86,8 @@ namespace CloudSharp.Data.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("ShareId");
+
+                    b.HasIndex("FilePath");
 
                     b.HasIndex("MemberId");
 
