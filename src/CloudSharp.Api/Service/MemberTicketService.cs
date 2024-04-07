@@ -8,7 +8,7 @@ using FluentResults;
 
 namespace CloudSharp.Api.Service;
 
-public class MemberTicketService(ITicketStore _ticketStore, IFileStore _fileStore, Logger<IMemberTicketService> _logger) : IMemberTicketService
+public class MemberTicketService(ITicketStore _ticketStore, IFileStore _fileStore, ILogger<IMemberTicketService> _logger) : IMemberTicketService
 {
     public async ValueTask<Result<Guid>> AddFileStreamTicket(Guid memberId, string targetPath)
     {
@@ -41,6 +41,10 @@ public class MemberTicketService(ITicketStore _ticketStore, IFileStore _fileStor
     public async Task<Result<Guid>> AddFileUploadTicket(Guid memberId, string? targetFolderPath, string filename)
     {
         targetFolderPath ??= ".";
+        if (!filename.IsFileName())
+        {
+            return new BadRequestError().CausedBy("invalid file name");
+        }
         var targetFindResult = _fileStore.GetFileInfo(DirectoryType.Member, memberId, Path.Combine(targetFolderPath, filename));
         if (targetFindResult.IsFailed)
         {
