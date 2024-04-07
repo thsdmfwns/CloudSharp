@@ -63,7 +63,7 @@ public class HashMapTicketStore : ITicketStore
     public ValueTask<Result<Guid>> AddTicket<T>(ITicket<T> ticket) where T : ITicket<T>
     {
         var result = TryAdd(T.RedisKey, ticket.Token, ticket);
-        if (result)
+        if (!result)
         {
             return ValueTask.FromResult<Result<Guid>>(Result.Fail("exist token"));
         }
