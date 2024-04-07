@@ -14,7 +14,8 @@ public interface IShareService
     
     ValueTask<Result<Guid>> AddShare(Guid memberId, string filePath, string? password, DateTime? expireTime);
 
-    ValueTask<Result> UpdateShare(Guid shareId, Action<Data.EntityFramework.Entities.Share> updateAction);
+    ValueTask<Result> UpdateExpireTimeShare(Guid shareId, DateTime? expireTime);
+    ValueTask<Result> UpdatePassword(Guid shareId, string? password);
 
     ValueTask<Result> DeleteShare(Guid shareId);
     ValueTask<Result> DeleteShareByFilePath(Guid memberId, string filePath);
