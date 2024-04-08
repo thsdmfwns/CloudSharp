@@ -6,9 +6,7 @@ namespace CloudSharp.Api.Service;
 public interface IShareService
 {
     ValueTask<Result<ShareDto>> GetShare(Guid shareId);
-    ValueTask<Result<bool>> HasPassword(Guid shareId);
-    ValueTask<bool> ExistShare(Guid shareId);
-    ValueTask<Result> LoginShare(Guid shareId, string password);
+    ValueTask<Result> ValidateSharePassword(Guid shareId, string password);
     ValueTask<Result<List<ShareDto>>> GetSharesByMemberId(Guid memberId);
     ValueTask<Result<List<ShareDto>>> GetShareInFolder(Guid memberId, string folderPath);
     
