@@ -27,4 +27,26 @@ public static class EntityExtensions
         await databaseContext.SaveChangesAsync();
         return members;
     }
+    
+    public static Faker<Data.EntityFramework.Entities.Share> SetRules(this Faker<Data.EntityFramework.Entities.Share> faker,Member member, string? password = null, DateTime? expireTime = null)
+    {
+        faker
+            .RuleFor(p => p.ShareId, f => Guid.NewGuid())
+            .RuleFor(p => p.MemberId, f => member.MemberId)
+            .RuleFor(p => p.FilePath, f => f.System.FileName())
+            .RuleFor(p => p.Password, p => password is not null ? PasswordHasher.HashPassword(password) : null)
+            .RuleFor(p => p.ExpireTime, f => expireTime ?? DateTime.MaxValue)
+            .RuleFor(p => p.CreatedOn, f => f.Date.Recent());
+        return faker;
+    }
+    
+    public static async ValueTask<List<Data.EntityFramework.Entities.Share>> SeedShares(this DatabaseContext databaseContext, Member member, string? password = null, DateTime? expireTime = null, int count = 10)
+    {
+        var faker = new Faker<Data.EntityFramework.Entities.Share>()
+            .SetRules(member, password, expireTime);
+        var shares = faker.Generate(count);
+        await databaseContext.Shares.AddRangeAsync(shares);
+        await databaseContext.SaveChangesAsync();
+        return shares;
+    }
 }

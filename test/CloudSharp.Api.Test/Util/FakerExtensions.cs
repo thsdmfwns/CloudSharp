@@ -4,15 +4,15 @@ namespace CloudSharp.Api.Test.Util;
 
 public static class FakerExtensions
 {
-    public static string MakeFakeFile(this Faker faker, string DirectoryPath, string? fileDir, string? ext = null, bool fullPath = false)
+    public static string MakeFakeFile(this Faker faker, string directoryPath, string? fileDir, string? fileName = null, string? ext = null, bool fullPath = false)
     {
-        fileDir ??= string.Empty;
-        var fileName = faker.System.CommonFileName(ext);
+        fileDir ??= ".";
+        fileName ??= faker.System.CommonFileName(ext);
         var fileContent = faker.Lorem.Sentences();
-        var filePath = Path.Combine(DirectoryPath, fileDir, fileName);
-        Directory.CreateDirectory(Path.Combine(DirectoryPath, fileDir));
+        var filePath = Path.Combine(directoryPath, fileDir, fileName);
+        Directory.CreateDirectory(Path.Combine(directoryPath, fileDir));
         File.WriteAllText(filePath, fileContent);
-        var path = filePath.Remove(0, DirectoryPath.Length);
+        var path = filePath.Remove(0, directoryPath.Length);
         return fullPath ? filePath : path.TrimStart('/');
     }
 }
