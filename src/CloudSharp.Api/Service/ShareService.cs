@@ -21,7 +21,7 @@ public class ShareService(IShareRepository repository, IFileStore fileStore) : I
         return share.ToShareDto();
     }
 
-    public async ValueTask<Result<bool>> VerifySharePassword(Guid shareId, string password)
+    public async ValueTask<Result> VerifySharePassword(Guid shareId, string password)
     {
         var share = await repository.GetShareById(shareId);
         if (share is null)
@@ -32,9 +32,10 @@ public class ShareService(IShareRepository repository, IFileStore fileStore) : I
         var passwordHash = share.Password;
         if (passwordHash is null)
         {
-            return true;
+            return Result.Ok();
         }
-        return PasswordHasher.VerifyHashedPassword(passwordHash, password);
+        
+        return Result.OkIf(PasswordHasher.VerifyHashedPassword(passwordHash, password).IsSuccess, new UnauthorizedError().CausedBy("invalid password"));
     }
 
     public async ValueTask<Result<List<ShareDto>>> GetSharesByMemberId(Guid memberId)
