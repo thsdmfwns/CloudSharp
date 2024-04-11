@@ -2,8 +2,9 @@ namespace CloudSharp.Share.DTO;
 
 public record ShareDto
 {
-    public string ShareId { get; init; }
-    public string MemberId { get; init; }
-    public long ExpireTime { get; init; }
-    public bool HasPassword { get; init; }
+    public required string ShareId { get; init; }
+    public required string MemberId { get; init; }
+    public required long ExpireTime { get; init; }
+    public required bool HasPassword { get; init; }
+    public required string FileName { get; init; }
 }

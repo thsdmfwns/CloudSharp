@@ -16,4 +16,16 @@ public static class EntityExtensions
             ProfileImageId = member.ProfileImageId?.ToString(),
         };
     }
+
+    public static ShareDto ToShareDto(this Data.EntityFramework.Entities.Share share)
+    {
+        return new ShareDto
+        {
+            ShareId = share.ShareId.ToString(),
+            MemberId = share.MemberId.ToString(),
+            ExpireTime = new DateTimeOffset(share.ExpireTime).ToUnixTimeSeconds(),
+            HasPassword = share.Password is not null,
+            FileName = Path.GetFileName(share.FilePath)
+        };
+    }
 }
