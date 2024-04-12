@@ -55,6 +55,7 @@ public class ShareRepository(DatabaseContext context): IShareRepository
         }
 
         Shares.Remove(share);
+        await context.SaveChangesAsync();
         return Result.Ok();
     }
 
