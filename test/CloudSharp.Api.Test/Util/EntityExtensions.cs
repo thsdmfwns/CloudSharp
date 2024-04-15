@@ -35,13 +35,16 @@ public static class EntityExtensions
         faker
             .RuleFor(p => p.ShareId, f => Guid.NewGuid())
             .RuleFor(p => p.MemberId, f => member.MemberId)
-            .RuleFor(p => p.FilePath, f => Path.Combine(folderPath, f.System.FileName()))
+            .RuleFor(p => p.FilePath,
+                f => folderPath == "." || string.IsNullOrEmpty(folderPath)
+                    ? f.System.FileName()
+                    : Path.Combine(folderPath, f.System.FileName()))
             .RuleFor(p => p.Password, p => password is not null ? PasswordHasher.HashPassword(password) : null)
             .RuleFor(p => p.ExpireTime, f => expireTime ?? DateTime.MaxValue)
             .RuleFor(p => p.CreatedOn, f => f.Date.Recent());
         return faker;
     }
-    
+
     public static async ValueTask<List<Data.EntityFramework.Entities.Share>> SeedShares(this DatabaseContext databaseContext, Member member, string? password = null, DateTime? expireTime = null, int count = 10, string folderPath = ".")
     {
         var faker = new Faker<Data.EntityFramework.Entities.Share>()
