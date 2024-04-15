@@ -64,7 +64,7 @@ public class ShareRepository(DatabaseContext context): IShareRepository
         var result = await Shares
             .Where(x => x.FilePath == path && x.MemberId == memberId)
             .ExecuteDeleteAsync();
-        return Result.OkIf(result <= 0, "share not found");
+        return Result.OkIf(result > 0, "share not found");
     }
 
     public async ValueTask<Result> DeleteShareByStartWithPath(Guid memberId, string path)
@@ -72,6 +72,6 @@ public class ShareRepository(DatabaseContext context): IShareRepository
         var result = await Shares
             .Where(x => x.FilePath.StartsWith(path) && x.MemberId == memberId)
             .ExecuteDeleteAsync();
-        return Result.OkIf(result <= 0, "share not found");
+        return Result.OkIf(result > 0, "share not found");
     }
 }
