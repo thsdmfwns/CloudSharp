@@ -207,13 +207,101 @@ public class ShareService
         Assert.That(result.IsFailed);
         Assert.That(result.HasError(x => x.GetType() == errorType));
     }
+
+    [Test]
+    [TestCase(null, null, null)] //success
+    [TestCase("", null, typeof(NotFoundError))] //invalid id
+    public async Task UpdateExpireTimeShare(string? shareIdString, DateTime? expireTime, Type? errorType)
+    {
+        var shareId = shareIdString?.ToGuid() ?? _seededShares.First().ShareId;
+        expireTime ??= _faker.Date.Future();
+        var result = await _shareService.UpdateExpireTimeShare(shareId, expireTime);
+        if (errorType is null)
+        {
+            Assert.That(result.IsSuccess);
+            var actual = (await _databaseContext.Shares.FindAsync(shareId))!.ExpireTime;
+            Assert.That(actual, Is.EqualTo(expireTime));
+            return;
+        }
+        
+        //fail
+        Assert.That(result.IsFailed);
+        Assert.That(result.HasError(x => x.GetType() == errorType));
+    }
+    
+    [Test]
+    [TestCase(null, null, null)] //success
+    [TestCase("", null, typeof(NotFoundError))] //invalid id
+    public async Task UpdatePassword(string? shareIdString, string? password, Type? errorType)
+    {
+        var shareId = shareIdString?.ToGuid() ?? _seededShares.First().ShareId;
+        password ??= _faker.Internet.Password();
+
+        var result = await _shareService.UpdatePassword(shareId, password);
+        if (errorType is null)
+        {
+            Assert.That(result.IsSuccess);
+            var actual = (await _databaseContext.Shares.FindAsync(shareId))!.Password;
+            Assert.That(actual is not null);
+            var verifyResult = PasswordHasher.VerifyHashedPassword(actual!, password);
+            Assert.That(verifyResult.IsSuccess);
+            return;
+        }
+        
+        
+        //fail
+        Assert.That(result.IsFailed);
+        Assert.That(result.HasError(x => x.GetType() == errorType));
+    }
+
+    [Test]
+    [TestCase(null, null)] //success
+    [TestCase("", typeof(NotFoundError))] //invalid id
+    public async Task DeleteShare(string? shareIdString, Type? errorType)
+    {
+        var shareId = shareIdString?.ToGuid() ?? _seededShares.First().ShareId;
+
+        var result = await _shareService.DeleteShare(shareId);
+
+        if (errorType is null)
+        {
+            Assert.That(result.IsSuccess);
+            var find = await _databaseContext.Shares.FindAsync(shareId);
+            Assert.That(find is null);
+            return;
+        }
+        
+        //fail
+        Assert.That(result.IsFailed);
+        Assert.That(result.HasError(x => x.GetType() == errorType));
+    }
+
+    
+    [Test]
+    [TestCase(null, null, null)] //success
+    [TestCase("", null, typeof(NotFoundError))] //invalid id
+    [TestCase(null, "not_file", typeof(NotFoundError))] //invalid path
+    [TestCase(null, "../..", typeof(BadRequestError))] //invalid path
+    public async Task DeleteShareByFilePath(string? memberIdString, string? filePath, Type? errorType)
+    {
+        var memberId = memberIdString?.ToGuid() ?? _seededMember.MemberId;
+        filePath ??= _seededShares.First().FilePath;
+
+        var result = await _shareService.DeleteShareByFilePath(memberId, filePath);
+        if (errorType is null)
+        {
+            Assert.That(result.IsSuccess);
+            var find = await _databaseContext.Shares.Where(x => x.FilePath == filePath).FirstOrDefaultAsync();
+            Assert.That(find is null);
+            return;
+        }
+        
+        //fail
+        Assert.That(result.IsFailed);
+        Assert.That(result.HasError(x => x.GetType() == errorType));
+    }
     /*
      *
-       ValueTask<Result> UpdateExpireTimeShare(Guid shareId, DateTime? expireTime);
-       ValueTask<Result> UpdatePassword(Guid shareId, string? password);
-
-       ValueTask<Result> DeleteShare(Guid shareId);
-       ValueTask<Result> DeleteShareByFilePath(Guid memberId, string filePath);
        ValueTask<Result> DeleteShareInFolder(Guid memberId, string folderPath);
      */
 }
