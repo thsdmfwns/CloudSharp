@@ -89,7 +89,7 @@ public class MemberTicketService
         filename ??= _faker.System.FileName();
         if (filename == "exist")
         {
-            filename = _filePath;
+            filename = Path.GetFileName(_filePath);
         }
         
         var result = await _memberTicketService.AddFileUploadTicket(memberId, targetFolderPath, filename);
