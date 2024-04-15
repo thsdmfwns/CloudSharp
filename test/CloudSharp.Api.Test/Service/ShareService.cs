@@ -64,6 +64,7 @@ public class ShareService
         }
         Directory.CreateDirectory(Path.Combine(_memberDirectoryPath, _folderName));
         _seededShares = await SeedShare(_seededMember);
+        _seededShares.AddRange(await SeedShare(_seededMember, _folderName, count: 5));
     }
     public void Dispose()
     {
@@ -156,7 +157,6 @@ public class ShareService
     {
         var memberId = memberIdString?.ToGuid() ?? _seededMember.MemberId;
         folderPath ??= _folderName;
-        _seededShares.AddRange(await SeedShare(_seededMember, _folderName, count: 5));
         var result = await _shareService.GetShareInFolder(memberId, folderPath);
         if (errorType is null)
         {
@@ -291,7 +291,9 @@ public class ShareService
         if (errorType is null)
         {
             Assert.That(result.IsSuccess);
-            var find = await _databaseContext.Shares.Where(x => x.FilePath == filePath).FirstOrDefaultAsync();
+            var find = await _databaseContext.Shares
+                .Where(x => x.FilePath == filePath && x.MemberId == memberId)
+                .FirstOrDefaultAsync();
             Assert.That(find is null);
             return;
         }
@@ -300,8 +302,31 @@ public class ShareService
         Assert.That(result.IsFailed);
         Assert.That(result.HasError(x => x.GetType() == errorType));
     }
-    /*
-     *
-       ValueTask<Result> DeleteShareInFolder(Guid memberId, string folderPath);
-     */
+
+    
+    [Test]
+    [TestCase(null, null, null)] //success
+    [TestCase("", null, typeof(NotFoundError))] //invalid id
+    [TestCase(null, "not_folder", typeof(NotFoundError))] //invalid path
+    [TestCase(null, "..", typeof(BadRequestError))] //invalid path
+    public async Task DeleteShareInFolder(string? memberIdString, string? folderPath, Type? errorType)
+    {
+        var memberId = memberIdString?.ToGuid() ?? _seededMember.MemberId;
+        folderPath ??= _folderName;
+
+        var result = await _shareService.DeleteShareInFolder(memberId, folderPath);
+        if (errorType is null)
+        {
+            Assert.That(result.IsSuccess);
+            var find = await _databaseContext.Shares
+                .Where(x => x.FilePath.StartsWith(folderPath) && x.MemberId == memberId)
+                .ToListAsync();
+            Assert.That(find, Is.Empty);
+            return;
+        }
+        
+        //fail
+        Assert.That(result.IsFailed);
+        Assert.That(result.HasError(x => x.GetType() == errorType));
+    }
 }
