@@ -49,4 +49,10 @@ public class FileStore : IFileStore
     };
     public string GetTargetPath(DirectoryType directoryType, Guid directoryId, string targetPath)
        =>Path.Combine(GetDirectoryPath(directoryType), directoryId.ToString(), targetPath);
+    
+    public string GetRelativePath(DirectoryType directoryType, Guid directoryId, string targetFullPath)
+    {
+        var memberDIr = GetTargetPath(directoryType, directoryId, ".");
+        return Path.GetRelativePath(memberDIr, targetFullPath);
+    }
 }

@@ -14,4 +14,5 @@ public interface IFileStore
     Result<DirectoryInfo> GetDirectoryInfo(DirectoryType directoryType, Guid directoryId,
         string targetPath);
     string GetTargetPath(DirectoryType directoryType, Guid directoryId, string targetPath);
+    string GetRelativePath(DirectoryType directoryType, Guid directoryId, string targetFullPath);
 }

@@ -10,6 +10,8 @@ namespace CloudSharp.Api.Service;
 
 public class ShareService(IShareRepository repository, IFileStore fileStore) : IShareService
 {
+    private string GetRelativePath(Guid memberId, string targetFullPath) =>
+        fileStore.GetRelativePath(DirectoryType.Member, memberId, targetFullPath);
     public async ValueTask<Result<ShareDto>> GetShare(Guid shareId)
     {
         var share = await repository.GetShareById(shareId);
@@ -56,7 +58,7 @@ public class ShareService(IShareRepository repository, IFileStore fileStore) : I
             return new NotFoundError().CausedBy("folder not found");
         }
 
-        var shares = await repository.GetSharesByFolderPath(memberId, folderPath);
+        var shares = await repository.GetSharesByFolderPath(memberId, GetRelativePath(memberId, findFolderResult.Value.FullName));
         return shares.Select(x => x.ToShareDto()).ToList();
     }
 
@@ -75,7 +77,7 @@ public class ShareService(IShareRepository repository, IFileStore fileStore) : I
         {
             ShareId = Guid.NewGuid(),
             MemberId = memberId,
-            FilePath = filePath,
+            FilePath = GetRelativePath(memberId, findFileResult.Value.FullName),
             Password = password,
             ExpireTime = expireTime ?? DateTime.MaxValue,
         };
@@ -118,8 +120,8 @@ public class ShareService(IShareRepository repository, IFileStore fileStore) : I
         {
             return new BadRequestError().CausedBy(findFileResult.Errors);
         }
-
-        var deleteResult = await repository.DeleteShareByPath(memberId, filePath);
+        
+        var deleteResult = await repository.DeleteShareByPath(memberId, GetRelativePath(memberId, findFileResult.Value.FullName));
         return Result.OkIf(deleteResult.IsSuccess, new NotFoundError().CausedBy(deleteResult.Errors));
     }
 
@@ -131,7 +133,7 @@ public class ShareService(IShareRepository repository, IFileStore fileStore) : I
             return new BadRequestError().CausedBy(findFolderResult.Errors);
         }
         
-        var deleteResult = await repository.DeleteShareByStartWithPath(memberId, folderPath);
+        var deleteResult = await repository.DeleteShareByStartWithPath(memberId, GetRelativePath(memberId, findFolderResult.Value.FullName));
         return Result.OkIf(deleteResult.IsSuccess, new NotFoundError().CausedBy(deleteResult.Errors));
     }
 }
