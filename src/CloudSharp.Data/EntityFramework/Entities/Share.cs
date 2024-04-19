@@ -15,7 +15,9 @@ public class Share
     public Member Member { get; init; } = null!;
     
     [Key]
+    [MaxLength]
     public required string FilePath { get; init; }
+    [StringLength(256, MinimumLength = 5)]
     public required string? Password { get; set; }
     public required DateTime ExpireTime { get; set; }
     
