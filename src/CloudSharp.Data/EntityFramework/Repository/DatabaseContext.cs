@@ -80,5 +80,11 @@ public class DatabaseContext : DbContext
             .WithMany(e => e.GuildMemberRoles)
             .HasForeignKey(e => e.GuildRoleId)
             .IsRequired();
+
+        guildRole
+            .HasOne(e => e.Guild)
+            .WithMany(e => e.GuildRoles)
+            .HasForeignKey(e => e.GuildId)
+            .IsRequired();
     }
 }
