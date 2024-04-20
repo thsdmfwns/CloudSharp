@@ -35,6 +35,7 @@ public class MemberRepository(DatabaseContext context) : IMemberRepository
             return Result.Fail("member not found");
         }
         memberUpdateAction.Invoke(member);
+        member.UpdatedOn = DateTime.UtcNow;
         context.Members.Update(member);
         await context.SaveChangesAsync();
         return Result.Ok();

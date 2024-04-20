@@ -42,6 +42,7 @@ public class ShareRepository(DatabaseContext context): IShareRepository
             return Result.Fail("share not found");
         }
         updateAction.Invoke(share);
+        share.UpdatedOn = DateTime.UtcNow;
         Shares.Update(share);
         return Result.Ok();
     }
