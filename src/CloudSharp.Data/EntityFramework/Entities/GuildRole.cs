@@ -7,7 +7,8 @@ namespace CloudSharp.Data.EntityFramework.Entities;
 [PrimaryKey(nameof(GuildRoleId))]
 public class GuildRole
 {
-    [Key] 
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public ulong GuildRoleId { get; init; }
     [StringLength(256, MinimumLength = 1)]
     public required string RoleName { get; set; }

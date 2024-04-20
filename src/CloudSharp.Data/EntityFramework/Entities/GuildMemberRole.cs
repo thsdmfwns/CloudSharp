@@ -8,6 +8,7 @@ namespace CloudSharp.Data.EntityFramework.Entities;
 public class GuildMemberRole
 {
     [Key] 
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public ulong GuildMemberRoleId { get; init; }
 
     [ForeignKey(nameof(GuildMemberId))] 

@@ -8,13 +8,14 @@ namespace CloudSharp.Data.EntityFramework.Entities;
 public class Guild
 {
     [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public ulong GuildId { get; init; }
     [StringLength(256, MinimumLength = 3)]
     public required string GuildName { get; set; }
     public required Guid? GuildProfileImageId { get; set; }
     
     [ForeignKey(nameof(OwnMemberId))] 
-    public Guid OwnMemberId { get; init; }
+    public required Guid OwnMemberId { get; init; }
     public Member OwnMember { get; init; } = null!;
     public ICollection<GuildChannel> GuildChannels { get; } = new List<GuildChannel>();
     public ICollection<GuildRole> GuildRoles { get; } = new List<GuildRole>();

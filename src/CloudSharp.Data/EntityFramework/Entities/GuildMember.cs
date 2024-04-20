@@ -8,6 +8,7 @@ namespace CloudSharp.Data.EntityFramework.Entities;
 public class GuildMember
 {
     [Key] 
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public ulong GuildMemberId { get; init; }
     [StringLength(256, MinimumLength = 3)]
     public required string MemberName { get; set; }

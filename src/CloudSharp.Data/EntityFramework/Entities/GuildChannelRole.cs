@@ -7,6 +7,7 @@ namespace CloudSharp.Data.EntityFramework.Entities;
 [PrimaryKey(nameof(GuildChannelRoleId))]
 public class GuildChannelRole
 {
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     [Key] public ulong GuildChannelRoleId { get; set; }
     [ForeignKey(nameof(GuildChannelId))] 
     public required Guid GuildChannelId { get; set; }
