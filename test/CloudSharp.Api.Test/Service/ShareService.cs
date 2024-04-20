@@ -93,7 +93,7 @@ public class ShareService
         if (errorType is null)
         {
             Assert.That(findResult.IsSuccess);
-            Assert.That(findResult.Value.ShareId, Is.EqualTo(shareId.ToString()));
+            Assert.That(findResult.Value.ShareId, Is.EqualTo(shareId));
             return;
         }
         
@@ -192,8 +192,8 @@ public class ShareService
             Assert.That(inserted is not null);
             var expect = new ShareDto
             {
-                ShareId = result.Value.ToString(),
-                MemberId = memberId.ToString(),
+                ShareId = result.Value,
+                MemberId = memberId,
                 ExpireTime = new DateTimeOffset(expireTime ?? DateTime.MaxValue).ToUnixTimeSeconds(),
                 HasPassword = password is not null,
                 FileName = Path.GetFileName(filePath)

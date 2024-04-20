@@ -91,7 +91,7 @@ public class MemberService : IDisposable
         {
             Assert.That(registerResult.IsSuccess, Is.True);
             var insertedMemberDto = registerResult.Value;
-            var insertedMember = await _databaseContext.Members.FindAsync(Guid.Parse(insertedMemberDto.MemberId));
+            var insertedMember = await _databaseContext.Members.FindAsync(insertedMemberDto.MemberId);
             Assert.That(insertedMember, Is.Not.Null);
             return;
         }

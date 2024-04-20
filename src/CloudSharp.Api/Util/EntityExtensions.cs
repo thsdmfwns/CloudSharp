@@ -9,7 +9,7 @@ public static class EntityExtensions
     {
         return new MemberDto
         {
-            MemberId = member.MemberId.ToString(),
+            MemberId = member.MemberId,
             LoginId = member.LoginId,
             Email = member.Email,
             Nickname = member.Nickname,
@@ -21,8 +21,8 @@ public static class EntityExtensions
     {
         return new ShareDto
         {
-            ShareId = share.ShareId.ToString(),
-            MemberId = share.MemberId.ToString(),
+            ShareId = share.ShareId,
+            MemberId = share.MemberId,
             ExpireTime = new DateTimeOffset(share.ExpireTime).ToUnixTimeSeconds(),
             HasPassword = share.Password is not null,
             FileName = Path.GetFileName(share.FilePath)

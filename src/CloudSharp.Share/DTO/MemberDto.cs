@@ -5,7 +5,7 @@ namespace CloudSharp.Share.DTO;
 public record MemberDto
 {
     [JsonPropertyName("mid")]
-    public required string MemberId { get; init; }
+    public required Guid MemberId { get; init; }
     [JsonPropertyName("lid")]
     public required string LoginId { get; init; }
     [JsonPropertyName("email")]
