@@ -13,6 +13,11 @@ public class GuildRole
     [StringLength(256, MinimumLength = 1)]
     public required string RoleName { get; set; }
     
+    public required uint RoleColorRed { get; set; }
+    public required uint RoleColorBlue { get; set; }
+    public required uint RoleColorGreen { get; set; }
+    public required uint RoleColorAlpha { get; set; }
+    
     [ForeignKey(nameof(GuildId))] 
     public required ulong GuildId { get; init; }
     public Guild Guild { get; init; } = null!;
