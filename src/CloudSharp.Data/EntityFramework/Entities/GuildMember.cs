@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace CloudSharp.Data.EntityFramework.Entities;
 
 [PrimaryKey(nameof(GuildMemberId))]
+[Index(nameof(IsBanned))]
 public class GuildMember
 {
     [Key] 
@@ -12,6 +13,7 @@ public class GuildMember
     public ulong GuildMemberId { get; init; }
     [StringLength(256, MinimumLength = 3)]
     public required string MemberName { get; set; }
+    public bool IsBanned { get; set; }
     
     [ForeignKey(nameof(GuildId))] 
     public required ulong GuildId { get; init; }
