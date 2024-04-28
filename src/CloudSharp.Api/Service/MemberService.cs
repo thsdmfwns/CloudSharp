@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using CloudSharp.Api.Error;
 using CloudSharp.Api.Util;
-using CloudSharp.Data.EntityFramework.Entities;
-using CloudSharp.Data.EntityFramework.Repository;
+using CloudSharp.Data.Entities;
+using CloudSharp.Data.Repository;
 using CloudSharp.Share.DTO;
 using FluentResults;
 using Exception = System.Exception;

@@ -3,7 +3,7 @@ using Dapper;
 using FluentResults;
 using MySql.Data.MySqlClient;
 
-namespace CloudSharp.Data.Dapper.Query.FIndGuildByIdQuery;
+namespace CloudSharp.Data.Query;
 
 public class FIndGuildByIdQuery : IQuery<GuildDto>
 {

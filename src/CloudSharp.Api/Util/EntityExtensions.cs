@@ -1,4 +1,4 @@
-using CloudSharp.Data.EntityFramework.Entities;
+using CloudSharp.Data.Entities;
 using CloudSharp.Share.DTO;
 
 namespace CloudSharp.Api.Util;
@@ -17,7 +17,7 @@ public static class EntityExtensions
         };
     }
 
-    public static ShareDto ToShareDto(this Data.EntityFramework.Entities.Share share)
+    public static ShareDto ToShareDto(this Data.Entities.Share share)
     {
         return new ShareDto
         {

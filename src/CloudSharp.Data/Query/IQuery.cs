@@ -1,6 +1,6 @@
 using FluentResults;
 
-namespace CloudSharp.Data.Dapper.Query;
+namespace CloudSharp.Data.Query;
 
 public interface IQuery<T>
 {

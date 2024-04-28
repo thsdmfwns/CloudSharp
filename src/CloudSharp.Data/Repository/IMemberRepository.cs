@@ -1,7 +1,7 @@
-using CloudSharp.Data.EntityFramework.Entities;
+using CloudSharp.Data.Entities;
 using FluentResults;
 
-namespace CloudSharp.Data.EntityFramework.Repository;
+namespace CloudSharp.Data.Repository;
 
 public interface IMemberRepository
 {

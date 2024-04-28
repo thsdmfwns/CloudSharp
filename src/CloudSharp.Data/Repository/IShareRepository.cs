@@ -1,6 +1,6 @@
 using FluentResults;
 
-namespace CloudSharp.Data.EntityFramework.Repository;
+namespace CloudSharp.Data.Repository;
 
 public interface IShareRepository
 {

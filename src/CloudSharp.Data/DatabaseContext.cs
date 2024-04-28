@@ -1,7 +1,7 @@
-using CloudSharp.Data.EntityFramework.Entities;
+using CloudSharp.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace CloudSharp.Data.EntityFramework.Repository;
+namespace CloudSharp.Data.EntityFramework;
 
 public class DatabaseContext : DbContext
 {

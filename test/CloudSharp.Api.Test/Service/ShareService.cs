@@ -5,8 +5,9 @@ using CloudSharp.Api.Error;
 using CloudSharp.Api.Service;
 using CloudSharp.Api.Test.Util;
 using CloudSharp.Api.Util;
-using CloudSharp.Data.EntityFramework.Entities;
-using CloudSharp.Data.EntityFramework.Repository;
+using CloudSharp.Data.Entities;
+using CloudSharp.Data.EntityFramework;
+using CloudSharp.Data.Repository;
 using CloudSharp.Data.Store;
 using CloudSharp.Share.DTO;
 using CloudSharp.Share.Enum;
@@ -27,7 +28,7 @@ public class ShareService
     private DatabaseContext _databaseContext = null!;
     private IFileStore _fileStore = null!;
     private Member _seededMember = null!;
-    private List<Data.EntityFramework.Entities.Share> _seededShares = null!;
+    private List<Data.Entities.Share> _seededShares = null!;
     private string _memberDirectoryPath = null!;
 
     [OneTimeSetUp]
@@ -72,7 +73,7 @@ public class ShareService
         _databaseContext.Dispose();
     }
 
-    private async Task<List<Data.EntityFramework.Entities.Share>> SeedShare(
+    private async Task<List<Data.Entities.Share>> SeedShare(
         Member? member, string folderPath = ".", string? password = null, DateTime? expireTime = null, int count = 10)
     {
         member ??= _seededMember;

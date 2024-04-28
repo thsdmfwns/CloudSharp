@@ -1,7 +1,7 @@
 using Bogus;
 using CloudSharp.Api.Util;
-using CloudSharp.Data.EntityFramework.Entities;
-using CloudSharp.Data.EntityFramework.Repository;
+using CloudSharp.Data.Entities;
+using CloudSharp.Data.EntityFramework;
 
 namespace CloudSharp.Api.Test.Util;
 
@@ -28,8 +28,8 @@ public static class EntityExtensions
         return members;
     }
 
-    public static Faker<Data.EntityFramework.Entities.Share> SetRules(
-        this Faker<Data.EntityFramework.Entities.Share> faker, Member member, string? password = null,
+    public static Faker<Data.Entities.Share> SetRules(
+        this Faker<Data.Entities.Share> faker, Member member, string? password = null,
         DateTime? expireTime = null, string folderPath = ".")
     {
         faker
@@ -45,9 +45,9 @@ public static class EntityExtensions
         return faker;
     }
 
-    public static async ValueTask<List<Data.EntityFramework.Entities.Share>> SeedShares(this DatabaseContext databaseContext, Member member, string? password = null, DateTime? expireTime = null, int count = 10, string folderPath = ".")
+    public static async ValueTask<List<Data.Entities.Share>> SeedShares(this DatabaseContext databaseContext, Member member, string? password = null, DateTime? expireTime = null, int count = 10, string folderPath = ".")
     {
-        var faker = new Faker<Data.EntityFramework.Entities.Share>()
+        var faker = new Faker<Data.Entities.Share>()
             .SetRules(member, password, expireTime, folderPath);
         var shares = faker.Generate(count);
         await databaseContext.Shares.AddRangeAsync(shares);

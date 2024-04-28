@@ -1,7 +1,8 @@
+using CloudSharp.Data.EntityFramework;
 using FluentResults;
 using Microsoft.EntityFrameworkCore;
 
-namespace CloudSharp.Data.EntityFramework.Repository;
+namespace CloudSharp.Data.Repository;
 
 public class ShareRepository(DatabaseContext context): IShareRepository
 {

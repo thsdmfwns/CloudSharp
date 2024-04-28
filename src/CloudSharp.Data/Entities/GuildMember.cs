@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace CloudSharp.Data.EntityFramework.Entities;
+namespace CloudSharp.Data.Entities;
 
 [PrimaryKey(nameof(GuildMemberId))]
 [Index(nameof(IsBanned))]

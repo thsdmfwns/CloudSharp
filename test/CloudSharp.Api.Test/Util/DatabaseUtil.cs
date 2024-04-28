@@ -1,4 +1,4 @@
-using CloudSharp.Data.EntityFramework.Repository;
+using CloudSharp.Data.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 
 namespace CloudSharp.Api.Test.Util;

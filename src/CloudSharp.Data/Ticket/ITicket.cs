@@ -1,4 +1,3 @@
-using CloudSharp.Data.EntityFramework.Entities;
 using CloudSharp.Share.DTO;
 
 namespace CloudSharp.Data.Ticket;

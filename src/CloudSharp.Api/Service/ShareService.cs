@@ -1,6 +1,6 @@
 using CloudSharp.Api.Error;
 using CloudSharp.Api.Util;
-using CloudSharp.Data.EntityFramework.Repository;
+using CloudSharp.Data.Repository;
 using CloudSharp.Data.Store;
 using CloudSharp.Share.DTO;
 using CloudSharp.Share.Enum;
@@ -73,7 +73,7 @@ public class ShareService(IShareRepository repository, IFileStore fileStore) : I
         {
             return new NotFoundError().CausedBy("file not found");
         }
-        var share = new Data.EntityFramework.Entities.Share
+        var share = new Data.Entities.Share
         {
             ShareId = Guid.NewGuid(),
             MemberId = memberId,
