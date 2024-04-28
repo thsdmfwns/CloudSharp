@@ -1,18 +1,26 @@
+using CloudSharp.Api.Error;
+using CloudSharp.Data.Repository;
 using CloudSharp.Share.DTO;
 using FluentResults;
 
 namespace CloudSharp.Api.Service;
 
-public class GuildService : IGuildService
+public class GuildService(IGuildRepository guildRepository) : IGuildService
 {
     public ValueTask<Result> CreateGuild(string guildName, Guid? guildProfileId)
     {
         throw new NotImplementedException();
     }
 
-    public ValueTask<Result<GuildDto>> GetGuild(ulong guildId)
+    public async ValueTask<Result<GuildDto>> GetGuild(ulong guildId)
     {
-        throw new NotImplementedException();
+        var result = await guildRepository.FindGuildById(guildId);
+        if (result.IsFailed)
+        {
+            return new NotFoundError().CausedBy(result.Errors);
+        }
+
+        return result.Value;
     }
 
     public ValueTask<Result> UpdateGuildName(ulong guildId, string guildName)
