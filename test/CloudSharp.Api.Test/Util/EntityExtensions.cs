@@ -60,8 +60,8 @@ public static class EntityExtensions
         faker
             .RuleFor(p => p.GuildName, f => f.Internet.UserName())
             .RuleFor(p => p.GuildProfileImageId, guildProfileImageId)
-            .RuleFor(p => p.GuildProfileImageId, memberId)
-            .RuleFor(p => p.CreateOn, f => f.Date.Past())
+            .RuleFor(p => p.OwnMemberId, memberId)
+            .RuleFor(p => p.CreatedOn, f => f.Date.Past())
             .RuleFor(p => p.UpdatedOn, f => f.Date.Recent());
         return faker;
     } 
@@ -81,7 +81,7 @@ public static class EntityExtensions
             .RuleFor(p => p.GuildChannelId, _ => Guid.NewGuid())
             .RuleFor(p => p.GuildChannelName, f => f.Internet.UserName())
             .RuleFor(p => p.GuildId, guildId)
-            .RuleFor(p => p.CreateOn, f => f.Date.Past())
+            .RuleFor(p => p.CreatedOn, f => f.Date.Past())
             .RuleFor(p => p.UpdatedOn, f => f.Date.Recent());
         return faker;
     } 
@@ -102,7 +102,7 @@ public static class EntityExtensions
             .RuleFor(p => p.MemberId, memberId)
             .RuleFor(p => p.IsBanned, isBanned)
             .RuleFor(p => p.GuildId, guildId)
-            .RuleFor(p => p.CreateOn, f => f.Date.Past())
+            .RuleFor(p => p.CreatedOn, f => f.Date.Past())
             .RuleFor(p => p.UpdatedOn, f => f.Date.Recent());
         return faker;
     } 
@@ -124,7 +124,7 @@ public static class EntityExtensions
             .RuleFor(p => p.RoleColorBlue, f => f.Random.UInt())
             .RuleFor(p => p.RoleColorGreen, f => f.Random.UInt())
             .RuleFor(p => p.GuildId, guildId)
-            .RuleFor(p => p.CreateOn, f => f.Date.Past())
+            .RuleFor(p => p.CreatedOn, f => f.Date.Past())
             .RuleFor(p => p.UpdatedOn, f => f.Date.Recent());
         return faker;
     } 
@@ -143,7 +143,7 @@ public static class EntityExtensions
         faker
             .RuleFor(p => p.GuildChannelId, guildChannelId)
             .RuleFor(p => p.GuildRoleId, guildRoleId)
-            .RuleFor(p => p.CreateOn, f => f.Date.Past());
+            .RuleFor(p => p.CreatedOn, f => f.Date.Past());
         return faker;
     } 
     
