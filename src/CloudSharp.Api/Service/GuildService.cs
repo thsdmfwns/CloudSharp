@@ -5,7 +5,7 @@ using FluentResults;
 
 namespace CloudSharp.Api.Service;
 
-public class GuildService(IGuildRepository guildRepository) : IGuildService
+public class GuildService(IGuildRepository guildRepository, ILogger<IGuildService> logger) : IGuildService
 {
     public ValueTask<Result> CreateGuild(string guildName, Guid? guildProfileId)
     {
