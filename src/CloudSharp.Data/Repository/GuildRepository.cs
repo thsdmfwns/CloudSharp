@@ -15,7 +15,7 @@ public class GuildRepository(DatabaseContext databaseContext) : IGuildRepository
         {
             return new Error("connectionString not found");
         }
-        var query = new FIndGuildByIdQuery
+        var query = new FindGuildByIdQuery
         {
             DbConnectionString = connectionString,
             GuildId = guildId
