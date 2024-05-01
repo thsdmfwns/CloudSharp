@@ -8,8 +8,7 @@ namespace CloudSharp.Data.Entities;
 [Index(nameof(IsBanned))]
 public class GuildMember
 {
-    [Key] 
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public ulong GuildMemberId { get; init; }
     [StringLength(256, MinimumLength = 3)]
     public required string MemberName { get; set; }
@@ -25,6 +24,6 @@ public class GuildMember
 
     public ICollection<GuildMemberRole> GuildMemberRoles { get; } = new List<GuildMemberRole>();
     
-    public DateTime CreateOn { get; init; } = DateTime.UtcNow;
+    public DateTime CreatedOn { get; init; } = DateTime.UtcNow;
     public DateTime? UpdatedOn { get; set; }
 }

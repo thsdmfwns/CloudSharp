@@ -7,8 +7,8 @@ namespace CloudSharp.Data.Entities;
 [PrimaryKey(nameof(GuildChannelRoleId))]
 public class GuildChannelRole
 {
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    [Key] public ulong GuildChannelRoleId { get; set; }
+    [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public ulong GuildChannelRoleId { get; set; }
     [ForeignKey(nameof(GuildChannelId))] 
     public required Guid GuildChannelId { get; set; }
     public GuildChannel GuildChannel { get; init; } = null!;
@@ -17,5 +17,5 @@ public class GuildChannelRole
     public required ulong GuildRoleId { get; init; }
     public GuildRole GuildRole { get; init; } = null!;
     
-    public DateTime CreateOn { get; init; } = DateTime.UtcNow;
+    public DateTime CreatedOn { get; init; } = DateTime.UtcNow;
 }

@@ -7,7 +7,8 @@ namespace CloudSharp.Data.Entities;
 [PrimaryKey(nameof(GuildChannelId))]
 public class GuildChannel
 {
-    [Key] public Guid GuildChannelId { get; init; } = Guid.NewGuid();
+    [Key] 
+    public Guid GuildChannelId { get; init; } = Guid.NewGuid();
 
     [StringLength(256, MinimumLength = 3)]
     public required string GuildChannelName { get; set; }
@@ -18,6 +19,6 @@ public class GuildChannel
     
     public ICollection<GuildChannelRole> GuildChannelRoles { get; } = new List<GuildChannelRole>();
     
-    public DateTime CreateOn { get; init; } = DateTime.UtcNow;
+    public DateTime CreatedOn { get; init; } = DateTime.UtcNow;
     public DateTime? UpdatedOn { get; set; }
 }
