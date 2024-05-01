@@ -6,7 +6,7 @@ public record GuildDto
     public required string GuildName { get; init; }
     public required Guid? GuildProfileId { get; init; }
     public required DateTime CreatedOn { get; init; }
-    public required DateTime? UpdateOn { get; init; }
+    public required DateTime? UpdatedOn { get; init; }
     
     public required IReadOnlyList<GuildMemberDto> Members { get; init; }
     public required IReadOnlyList<GuildChannelDto> Channels { get; init; }

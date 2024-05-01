@@ -12,7 +12,7 @@ public record GuildMemberDto
     
     public required DateTime CreatedOn { get; init; }
     
-    public required DateTime? UpdateOn { get; init; }
+    public required DateTime? UpdatedOn { get; init; }
 
     public required IReadOnlyList<GuildMemberRoleDto> HadRoles { get; init; }
 };
