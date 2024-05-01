@@ -74,7 +74,7 @@ public class MemberService : IDisposable
     [TestCase(null, null, "not_email", null, null, typeof(BadRequestError), false)] // wrong email
     public async Task Register(string? id, string? password, string? email, string? nickname, Guid? profileUrl, Type? errorType, bool isExistedId)
     {
-        var faker = new Faker<Member>().SetRules();
+        var faker = new Faker<Member>().SetMemberRules();
         var member = faker.Generate(1).First();
         id ??= member.LoginId ;
         if (isExistedId)
