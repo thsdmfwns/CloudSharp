@@ -155,7 +155,7 @@ public class FindGuildByIdQuery : IQuery<GuildDto>
             GuildRoleId = x.GuildRoleId,
             RoleName = x.RoleName,
             CreatedOn = x.CreateOn,
-            UpdateOn = x.UpdatedOn,
+            UpdatedOn = x.UpdatedOn,
             RoleColorRed = x.RoleColorRed,
             RoleColorBlue = x.RoleColorBlue,
             RoleColorGreen = x.RoleColorGreen,
@@ -179,7 +179,7 @@ public class FindGuildByIdQuery : IQuery<GuildDto>
                 MemberId = x.MemberId,
                 IsBanned = x.IsBanned,
                 CreatedOn = x.CreateOn,
-                UpdateOn = x.UpdatedOn,
+                UpdatedOn = x.UpdatedOn,
                 HadRoles = guildMemberRolesDto.Where(role => x.GuildMemberId == role.GuildMemberId).ToList()
             }).ToList();
         var guildChannelRolesDto = guildChannelRoles
@@ -189,7 +189,7 @@ public class FindGuildByIdQuery : IQuery<GuildDto>
                 GuildChannelRoleId = x.GuildChannelRoleId,
                 GuildChannelId = x.GuildChannelId,
                 GuildRole = guildRolesDto.Single(role => x.GuildRoleId == role.GuildRoleId),
-                CreateOn = x.CreateOn
+                CreatedOn = x.CreateOn
             });
         var guildChannelsDto = guildChannels
             .ToList()
@@ -199,7 +199,7 @@ public class FindGuildByIdQuery : IQuery<GuildDto>
                 ChannelId = x.GuildChannelId,
                 ChannelName = x.GuildChannelName,
                 CreatedOn = x.CreateOn,
-                UpdateOn = x.UpdatedOn,
+                UpdatedOn = x.UpdatedOn,
                 ChannelRoles = guildChannelRolesDto.Where(role => x.GuildChannelId == role.GuildChannelId).ToList()
             }).ToList();
         
@@ -209,7 +209,7 @@ public class FindGuildByIdQuery : IQuery<GuildDto>
             GuildName = guild.GuildName,
             GuildProfileId = guild.GuildProfileImageId,
             CreatedOn = guild.CreateOn,
-            UpdateOn = guild.UpdateOn,
+            UpdatedOn = guild.UpdateOn,
             Members = guildMembersDto,
             Channels = guildChannelsDto,
             Roles = guildRolesDto
