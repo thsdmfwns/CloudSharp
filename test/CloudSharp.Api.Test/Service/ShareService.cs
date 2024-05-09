@@ -5,8 +5,8 @@ using CloudSharp.Api.Error;
 using CloudSharp.Api.Service;
 using CloudSharp.Api.Test.Util;
 using CloudSharp.Api.Util;
+using CloudSharp.Data;
 using CloudSharp.Data.Entities;
-using CloudSharp.Data.EntityFramework;
 using CloudSharp.Data.Repository;
 using CloudSharp.Data.Store;
 using CloudSharp.Share.DTO;
@@ -66,6 +66,7 @@ public class ShareService
         Directory.CreateDirectory(Path.Combine(_memberDirectoryPath, _folderName));
         _seededShares = await SeedShare(_seededMember);
         _seededShares.AddRange(await SeedShare(_seededMember, _folderName, count: 5));
+        _databaseContext.ChangeTracker.Clear();
     }
     public void Dispose()
     {

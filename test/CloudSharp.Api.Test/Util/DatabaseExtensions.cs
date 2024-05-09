@@ -1,5 +1,5 @@
 using System.Data.Common;
-using CloudSharp.Data.EntityFramework;
+using CloudSharp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Respawn;

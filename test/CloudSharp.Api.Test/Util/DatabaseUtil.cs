@@ -1,9 +1,9 @@
-using CloudSharp.Data.EntityFramework;
+using CloudSharp.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace CloudSharp.Api.Test.Util;
 
-public class DatabaseUtil
+public static class DatabaseUtil
 {
     public static DatabaseContext GetDatabaseContext()
     {

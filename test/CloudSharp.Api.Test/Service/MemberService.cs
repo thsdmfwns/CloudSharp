@@ -4,8 +4,8 @@ using CloudSharp.Api.Error;
 using CloudSharp.Api.Service;
 using CloudSharp.Api.Test.Util;
 using CloudSharp.Api.Util;
+using CloudSharp.Data;
 using CloudSharp.Data.Entities;
-using CloudSharp.Data.EntityFramework;
 using CloudSharp.Data.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -38,6 +38,7 @@ public class MemberService : IDisposable
             NullLogger<Api.Service.MemberService>.Instance);
         await _respawner.ResetAsync(_dbConnection);
         _seededMembers = await _databaseContext.SeedMembers();
+        _databaseContext.ChangeTracker.Clear();
     }
 
     public void Dispose()
