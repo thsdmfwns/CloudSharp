@@ -17,8 +17,8 @@ public class FindGuildByIdQuery : IQuery<GuildDto>
         ulong GuildId,
         string GuildName,
         Guid? GuildProfileImageId,
-        DateTime CreateOn,
-        DateTime? UpdateOn
+        DateTime CreatedOn,
+        DateTime? UpdatedOn
     );
 
     private record _GuildMember(
@@ -26,7 +26,7 @@ public class FindGuildByIdQuery : IQuery<GuildDto>
         ulong GuildMemberId,
         Guid MemberId,
         bool IsBanned,
-        DateTime CreateOn,
+        DateTime CreatedOn,
         DateTime? UpdatedOn
     );
 
@@ -41,7 +41,7 @@ public class FindGuildByIdQuery : IQuery<GuildDto>
         ulong GuildId,
         Guid GuildChannelId,
         string GuildChannelName,
-        DateTime CreateOn,
+        DateTime CreatedOn,
         DateTime? UpdatedOn
     );
 
@@ -49,19 +49,19 @@ public class FindGuildByIdQuery : IQuery<GuildDto>
         ulong GuildChannelRoleId,
         Guid GuildChannelId,
         ulong GuildRoleId,
-        DateTime CreateOn
+        DateTime CreatedOn
     );
 
     private record _GuildRole(
         ulong GuildId,
-        string RoleName,
-        ulong GuildRoleId,
-        DateTime UpdatedOn,
-        DateTime CreateOn,
-        uint RoleColorRed,
-        uint RoleColorGreen,
-        uint RoleColorBlue,
-        uint RoleColorAlpha
+        UInt64 GuildRoleId,
+        String RoleName,
+        DateTime? UpdatedOn,
+        DateTime CreatedOn,
+        UInt32 RoleColorRed,
+        UInt32 RoleColorGreen,
+        UInt32 RoleColorBlue,
+        UInt32 RoleColorAlpha
     );
 
     #endregion
@@ -73,7 +73,7 @@ public class FindGuildByIdQuery : IQuery<GuildDto>
         SELECT Guild.GuildId, 
                Guild.GuildName,
                Guild.GuildProfileImageId,
-               Guild.CreateOn,
+               Guild.CreatedOn,
                Guild.UpdatedOn
         From cloud_sharp.Guilds AS Guild
         WHERE Guild.GuildId = @GuildId;
@@ -82,7 +82,7 @@ public class FindGuildByIdQuery : IQuery<GuildDto>
                GuildMember.GuildMemberId,
                GuildMember.MemberId,
                GuildMember.IsBanned,
-               GuildMember.CreateOn,
+               GuildMember.CreatedOn,
                GuildMember.UpdatedOn
         From cloud_sharp.GuildMembers AS GuildMember
         WHERE GuildMember.GuildId = @GuildId;
@@ -99,7 +99,7 @@ public class FindGuildByIdQuery : IQuery<GuildDto>
         SELECT Channel.GuildId,
                Channel.GuildChannelId,
                Channel.GuildChannelName,
-               Channel.CreateOn,
+               Channel.CreatedOn,
                Channel.UpdatedOn
         FROM cloud_sharp.GuildChannels As Channel
         WHERE Channel.GuildId = @GuildId;
@@ -107,7 +107,7 @@ public class FindGuildByIdQuery : IQuery<GuildDto>
         SELECT ChannelRole.GuildChannelRoleId,
                ChannelRole.GuildChannelId,
                ChannelRole.GuildRoleId,
-               ChannelRole.CreateOn
+               ChannelRole.CreatedOn
         From cloud_sharp.GuildChannelRoles AS ChannelRole
         JOIN cloud_sharp.GuildChannels Channel
             on Channel.GuildChannelId = ChannelRole.GuildChannelId
@@ -117,7 +117,7 @@ public class FindGuildByIdQuery : IQuery<GuildDto>
                Role.GuildRoleId,
                Role.RoleName,
                Role.UpdatedOn,
-               Role.CreateOn,
+               Role.CreatedOn,
                Role.RoleColorRed,
                Role.RoleColorGreen,
                Role.RoleColorBlue,
@@ -154,7 +154,7 @@ public class FindGuildByIdQuery : IQuery<GuildDto>
             GuildId = x.GuildId,
             GuildRoleId = x.GuildRoleId,
             RoleName = x.RoleName,
-            CreatedOn = x.CreateOn,
+            CreatedOn = x.CreatedOn,
             UpdatedOn = x.UpdatedOn,
             RoleColorRed = x.RoleColorRed,
             RoleColorBlue = x.RoleColorBlue,
@@ -178,7 +178,7 @@ public class FindGuildByIdQuery : IQuery<GuildDto>
                 GuildMemberId = x.GuildMemberId,
                 MemberId = x.MemberId,
                 IsBanned = x.IsBanned,
-                CreatedOn = x.CreateOn,
+                CreatedOn = x.CreatedOn,
                 UpdatedOn = x.UpdatedOn,
                 HadRoles = guildMemberRolesDto.Where(role => x.GuildMemberId == role.GuildMemberId).ToList()
             }).ToList();
@@ -189,7 +189,7 @@ public class FindGuildByIdQuery : IQuery<GuildDto>
                 GuildChannelRoleId = x.GuildChannelRoleId,
                 GuildChannelId = x.GuildChannelId,
                 GuildRole = guildRolesDto.Single(role => x.GuildRoleId == role.GuildRoleId),
-                CreatedOn = x.CreateOn
+                CreatedOn = x.CreatedOn
             });
         var guildChannelsDto = guildChannels
             .ToList()
@@ -198,7 +198,7 @@ public class FindGuildByIdQuery : IQuery<GuildDto>
                 GuildId = x.GuildId,
                 ChannelId = x.GuildChannelId,
                 ChannelName = x.GuildChannelName,
-                CreatedOn = x.CreateOn,
+                CreatedOn = x.CreatedOn,
                 UpdatedOn = x.UpdatedOn,
                 ChannelRoles = guildChannelRolesDto.Where(role => x.GuildChannelId == role.GuildChannelId).ToList()
             }).ToList();
@@ -208,8 +208,8 @@ public class FindGuildByIdQuery : IQuery<GuildDto>
             GuildId = guild.GuildId,
             GuildName = guild.GuildName,
             GuildProfileId = guild.GuildProfileImageId,
-            CreatedOn = guild.CreateOn,
-            UpdatedOn = guild.UpdateOn,
+            CreatedOn = guild.CreatedOn,
+            UpdatedOn = guild.UpdatedOn,
             Members = guildMembersDto,
             Channels = guildChannelsDto,
             Roles = guildRolesDto
