@@ -10,9 +10,11 @@ public record GuildMemberDto
     
     public required bool IsBanned { get; init; }
     
-    public required DateTime CreatedOn { get; init; }
+    public required DateTimeOffset CreatedOn { get; init; }
     
-    public required DateTime? UpdatedOn { get; init; }
+    public required DateTimeOffset? UpdatedOn { get; init; }
 
     public required IReadOnlyList<GuildMemberRoleDto> HadRoles { get; init; }
+
+    
 };

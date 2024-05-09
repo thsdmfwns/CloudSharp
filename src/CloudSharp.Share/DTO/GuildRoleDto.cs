@@ -1,12 +1,12 @@
 namespace CloudSharp.Share.DTO;
 
-public class GuildRoleDto
+public record GuildRoleDto
 {
     public required ulong GuildId { get; init; }
     public required ulong GuildRoleId { get; init; }
     public required string RoleName { get; init; }
-    public required DateTime CreatedOn { get; init; }
-    public required DateTime? UpdatedOn { get; init; }
+    public required DateTimeOffset CreatedOn { get; init; }
+    public required DateTimeOffset? UpdatedOn { get; init; }
     
     public required uint RoleColorRed { get; init; }
     public required uint RoleColorBlue { get; init; }
