@@ -131,4 +131,27 @@ public class GuildService : IDisposable
         Assert.That(result.HasError(x => x.GetType() == errorType));
     }
 
+    [Test]
+    [TestCase(null, null, null)] //success
+    [TestCase(ulong.MaxValue, null, typeof(NotFoundError))] //invalid id
+    public async Task UpdateGuildName(ulong? guildId, string? guildName, Type? errorType)
+    {
+        guildId ??= _rootSeededGuild.GuildId;
+        guildName ??= _faker.Name.JobTitle();
+
+        var result = await _guildService.UpdateGuildName(guildId.Value, guildName);
+        if (errorType is null)
+        {
+            Assert.That(result.IsSuccess);
+            var changed = await _databaseContext.Guilds.FindAsync(guildId.Value);
+            Assert.That(changed is not null);
+            Assert.That(changed!.GuildName, Is.EqualTo(guildName));    
+            return;
+        }
+        
+        //fail
+        Assert.That(result.IsFailed);
+        Assert.That(result.HasError(x => x.GetType() == errorType));
+    }
+
 }

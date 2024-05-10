@@ -3,6 +3,7 @@ using CloudSharp.Data.Entities;
 using CloudSharp.Data.Repository;
 using CloudSharp.Share.DTO;
 using FluentResults;
+using Mysqlx;
 
 namespace CloudSharp.Api.Service;
 
@@ -35,9 +36,15 @@ public class GuildService(IGuildRepository guildRepository, ILogger<IGuildServic
         return result.Value;
     }
 
-    public ValueTask<Result> UpdateGuildName(ulong guildId, string guildName)
+    public async ValueTask<Result> UpdateGuildName(ulong guildId, string guildName)
     {
-        throw new NotImplementedException();
+        var result = await guildRepository.UpdateGuildProperty(guildId, x => x.GuildName = guildName);
+        if (result.IsFailed && result.HasError<ExceptionalError>())
+        {
+            return new InternalServerError().CausedBy(result.Errors);
+        }
+        
+        return Result.OkIf(result.IsSuccess, new NotFoundError().CausedBy(result.Errors));
     }
 
     public ValueTask<Result> UpdateGuildProfileImage(ulong guildId, Guid? profileId)

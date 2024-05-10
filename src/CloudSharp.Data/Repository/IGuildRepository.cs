@@ -8,4 +8,6 @@ public interface IGuildRepository
 {
     ValueTask<Result<ulong>> InsertGuild(Guild guild);
     ValueTask<Result<GuildDto>> FindGuildById(ulong guildId);
+
+    ValueTask<Result> UpdateGuildProperty(ulong guildId, Action<Guild> updateAction);
 }

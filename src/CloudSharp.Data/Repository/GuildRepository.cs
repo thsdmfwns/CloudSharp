@@ -1,5 +1,6 @@
 using CloudSharp.Data.Entities;
 using CloudSharp.Data.Query;
+using CloudSharp.Data.Util;
 using CloudSharp.Share.DTO;
 using FluentResults;
 using Microsoft.EntityFrameworkCore;
@@ -11,9 +12,7 @@ public class GuildRepository(DatabaseContext databaseContext) : IGuildRepository
     public async ValueTask<Result<ulong>> InsertGuild(Guild guild)
     {
         var result = await databaseContext.Guilds.AddAsync(guild);
-        var saveResult = await Result.Try(
-            () => databaseContext.SaveChangesAsync(),
-            ex => new ExceptionalError(ex));
+        var saveResult = await databaseContext.SaveChangesAsyncWithResult();
         if (saveResult.IsFailed)
         {
             return new Error("fail to insertGuild").CausedBy(saveResult.Errors);
@@ -40,5 +39,20 @@ public class GuildRepository(DatabaseContext databaseContext) : IGuildRepository
         }
 
         return queryResult.Value;
+    }
+
+    public async ValueTask<Result> UpdateGuildProperty(ulong guildId, Action<Guild> updateAction)
+    {
+        var guild = await databaseContext.Guilds.FindAsync(guildId);
+        if (guild is null)
+        {
+            return new Error("guild not found");
+        }
+        updateAction.Invoke(guild);
+        databaseContext.Guilds.Update(guild);
+        var saveResult = await databaseContext.SaveChangesAsyncWithResult();
+        
+        return Result.OkIf(saveResult.IsSuccess, 
+            new Error("fail to update guild property").CausedBy(saveResult.Errors));
     }
 }
