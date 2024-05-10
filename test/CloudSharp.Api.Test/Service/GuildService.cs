@@ -89,7 +89,6 @@ public class GuildService : IDisposable
         if (errorType is null)
         {
             Assert.That(result.IsSuccess);
-            _databaseContext.ChangeTracker.Clear();
             var expect = new GuildDto
             {
                 GuildId = _rootSeededGuild.GuildId,
@@ -105,6 +104,28 @@ public class GuildService : IDisposable
             return;
         }
 
+        //fail
+        Assert.That(result.IsFailed);
+        Assert.That(result.HasError(x => x.GetType() == errorType));
+    }
+
+    [Test]
+    [TestCase(null, null, null, null)] //success
+    [TestCase("", null, null, typeof(InternalServerError))] //invalid memberId
+    public async Task CreateGuild(string? ownerMemberIdString, string? guildName, Guid? guildProfileId, Type? errorType)
+    {
+        var ownerMemberId = ownerMemberIdString?.ToGuid() ?? _seededMembers.First().ToMemberDto().MemberId;
+        guildName ??= _faker.Name.JobTitle();
+
+        var result = await _guildService.CreateGuild(ownerMemberId, guildName, guildProfileId);
+        if (errorType is null)
+        {
+            Assert.That(result.IsSuccess);
+            var inserted = await _databaseContext.Guilds.FindAsync(result.Value);
+            Assert.That(inserted is not null);
+            return;
+        }
+        
         //fail
         Assert.That(result.IsFailed);
         Assert.That(result.HasError(x => x.GetType() == errorType));

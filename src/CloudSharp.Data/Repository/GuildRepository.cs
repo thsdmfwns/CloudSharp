@@ -1,3 +1,4 @@
+using CloudSharp.Data.Entities;
 using CloudSharp.Data.Query;
 using CloudSharp.Share.DTO;
 using FluentResults;
@@ -7,6 +8,19 @@ namespace CloudSharp.Data.Repository;
 
 public class GuildRepository(DatabaseContext databaseContext) : IGuildRepository
 {
+    public async ValueTask<Result<ulong>> InsertGuild(Guild guild)
+    {
+        var result = await databaseContext.Guilds.AddAsync(guild);
+        var saveResult = await Result.Try(
+            () => databaseContext.SaveChangesAsync(),
+            ex => new ExceptionalError(ex));
+        if (saveResult.IsFailed)
+        {
+            return new Error("fail to insertGuild").CausedBy(saveResult.Errors);
+        }
+        return guild.GuildId;
+    }
+
     public async ValueTask<Result<GuildDto>> FindGuildById(ulong guildId)
     {
         var connectionString = databaseContext.Database.GetConnectionString();
