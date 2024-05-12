@@ -47,9 +47,16 @@ public class GuildService(IGuildRepository guildRepository, ILogger<IGuildServic
         return Result.OkIf(result.IsSuccess, new NotFoundError().CausedBy(result.Errors));
     }
 
-    public ValueTask<Result> UpdateGuildProfileImage(ulong guildId, Guid? profileId)
+    public async ValueTask<Result> UpdateGuildProfileImage(ulong guildId, Guid? profileId)
     {
-        throw new NotImplementedException();
+        
+        var result = await guildRepository.UpdateGuildProperty(guildId, x => x.GuildProfileImageId = profileId);
+        if (result.IsFailed && result.HasError<ExceptionalError>())
+        {
+            return new InternalServerError().CausedBy(result.Errors);
+        }
+        
+        return Result.OkIf(result.IsSuccess, new NotFoundError().CausedBy(result.Errors));
     }
 
     public ValueTask<Result> DeleteGuild(ulong guildId)

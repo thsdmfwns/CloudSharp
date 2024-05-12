@@ -57,6 +57,8 @@ public class GuildService : IDisposable
         _guildService = new Api.Service.GuildService(new GuildRepository(_databaseContext),
             NullLogger<Api.Service.GuildService>.Instance);
         await _respawner.ResetAsync(_dbConnection);
+        _databaseContext.ChangeTracker.Clear();
+        
         _seededMembers = await _databaseContext.SeedMembers(count: 1);
         _seededGuilds = await _databaseContext.SeedGuilds(_seededMembers.First(), count: 1);
         _rootSeededGuild = _seededGuilds.First();
@@ -133,7 +135,7 @@ public class GuildService : IDisposable
 
     [Test]
     [TestCase(null, null, null)] //success
-    [TestCase(ulong.MaxValue, null, typeof(NotFoundError))] //invalid id
+    [TestCase(ulong.MaxValue, null, typeof(NotFoundError))] //invalid idGuildChannelRoles
     public async Task UpdateGuildName(ulong? guildId, string? guildName, Type? errorType)
     {
         guildId ??= _rootSeededGuild.GuildId;
@@ -146,6 +148,30 @@ public class GuildService : IDisposable
             var changed = await _databaseContext.Guilds.FindAsync(guildId.Value);
             Assert.That(changed is not null);
             Assert.That(changed!.GuildName, Is.EqualTo(guildName));    
+            return;
+        }
+        
+        //fail
+        Assert.That(result.IsFailed);
+        Assert.That(result.HasError(x => x.GetType() == errorType));
+    }
+
+    [Test]
+    [TestCase(null, null, null)] //success
+    [TestCase(ulong.MaxValue, null, typeof(NotFoundError))] //invalid id
+    public async Task UpdateGuildProfileImage(ulong? guildId, string? profileIdString, Type? errorType)
+    {
+        guildId ??= _rootSeededGuild.GuildId;
+        var profileId = profileIdString?.ToGuid() ?? Guid.NewGuid();
+
+        var result = await _guildService.UpdateGuildProfileImage(guildId.Value, profileId);
+
+        if (errorType is  null)
+        {
+            Assert.That(result.IsSuccess);
+            var actual = await _databaseContext.Guilds.FindAsync(guildId);
+            Assert.That(actual is not null);
+            Assert.That(actual!.GuildProfileImageId, Is.EqualTo(profileId));
             return;
         }
         
