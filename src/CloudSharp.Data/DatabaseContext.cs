@@ -10,14 +10,14 @@ public class DatabaseContext : DbContext
     {
     }
     
-    public DbSet<Member> Members { get; set; }
-    public DbSet<Entities.Share> Shares { get; set; }
-    public DbSet<Guild> Guilds { get; set; }
-    public DbSet<GuildChannel> GuildChannels { get; set; }
-    public DbSet<GuildChannelRole> GuildChannelRoles { get; set; }
-    public DbSet<GuildMember> GuildMembers { get; set; }
-    public DbSet<GuildMemberRole> GuildMemberRoles { get; set; }
-    public DbSet<GuildRole> GuildRoles { get; set; }
+    public DbSet<Member> Members { get; init; }
+    public DbSet<Entities.Share> Shares { get; init; }
+    public DbSet<Guild> Guilds { get; init; }
+    public DbSet<GuildChannel> GuildChannels { get; init; }
+    public DbSet<GuildChannelRole> GuildChannelRoles { get; init; }
+    public DbSet<GuildMember> GuildMembers { get; init; }
+    public DbSet<GuildMemberRole> GuildMemberRoles { get; init; }
+    public DbSet<GuildRole> GuildRoles { get; init; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -93,7 +93,7 @@ public class DatabaseContext : DbContext
         guildMemberRole
             .HasOne(e => e.GuildMember)
             .WithMany(e => e.GuildMemberRoles)
-            .HasForeignKey(e => e.GuildMemberRoleId)
+            .HasForeignKey(e => e.GuildMemberId)
             .IsRequired();
         
         guildMemberRole
