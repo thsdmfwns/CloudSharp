@@ -13,6 +13,7 @@ public class GuildMember
     [StringLength(256, MinimumLength = 3)]
     public required string MemberName { get; set; }
     public bool IsBanned { get; set; }
+    public bool IsOwner { get; set; }
     
     [ForeignKey(nameof(GuildId))] 
     public required ulong GuildId { get; init; }

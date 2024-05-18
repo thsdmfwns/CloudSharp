@@ -15,7 +15,6 @@ public class GuildService(IGuildRepository guildRepository, ILogger<IGuildServic
         {
             GuildName = guildName,
             GuildProfileImageId = guildProfileId,
-            OwnMemberId = ownerMemberId,
         };
         var result = await guildRepository.InsertGuild(guild);
         if (result.IsFailed)

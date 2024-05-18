@@ -35,16 +35,11 @@ namespace CloudSharp.Data.Migrations
 
                     b.Property<Guid?>("GuildProfileImageId")
                         .HasColumnType("char(36)");
-
-                    b.Property<Guid>("OwnMemberId")
-                        .HasColumnType("char(36)");
-
+                    
                     b.Property<DateTime?>("UpdatedOn")
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("GuildId");
-
-                    b.HasIndex("OwnMemberId");
 
                     b.ToTable("Guilds");
                 });
@@ -113,6 +108,9 @@ namespace CloudSharp.Data.Migrations
                         .HasColumnType("bigint unsigned");
 
                     b.Property<bool>("IsBanned")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsOwner")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<Guid>("MemberId")
@@ -278,17 +276,6 @@ namespace CloudSharp.Data.Migrations
                     b.HasIndex("MemberId");
 
                     b.ToTable("Shares");
-                });
-
-            modelBuilder.Entity("CloudSharp.Data.Entities.Guild", b =>
-                {
-                    b.HasOne("CloudSharp.Data.Entities.Member", "OwnMember")
-                        .WithMany("Guilds")
-                        .HasForeignKey("OwnMemberId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("OwnMember");
                 });
 
             modelBuilder.Entity("CloudSharp.Data.Entities.GuildChannel", b =>

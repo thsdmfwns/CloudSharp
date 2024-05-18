@@ -38,14 +38,8 @@ public class DatabaseContext : DbContext
             .IsRequired();
         #endregion
 
-        #region guild
-        guild
-            .HasOne(e => e.OwnMember)
-            .WithMany(e => e.Guilds)
-            .HasForeignKey(e => e.OwnMemberId)
-            .IsRequired();
-        #endregion
-
+        //Guild region (now empty)
+        
         #region guildChannel
 
         guildChannel
