@@ -49,6 +49,7 @@ public class GuildRepository(DatabaseContext databaseContext) : IGuildRepository
             return new Error("guild not found");
         }
         updateAction.Invoke(guild);
+        guild.UpdatedOn = DateTime.Now;
         databaseContext.Guilds.Update(guild);
         var saveResult = await databaseContext.SaveChangesAsyncWithResult();
         
