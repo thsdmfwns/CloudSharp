@@ -59,8 +59,8 @@ public class GuildService : IDisposable
         await _respawner.ResetAsync(_dbConnection);
         _databaseContext.ChangeTracker.Clear();
         
-        _seededMembers = await _databaseContext.SeedMembers(count: 1);
-        _seededGuilds = await _databaseContext.SeedGuilds(_seededMembers.First(), count: 1);
+        _seededMembers = await _databaseContext.SeedMembers(count: 10);
+        _seededGuilds = await _databaseContext.SeedGuilds(count: 1);
         _rootSeededGuild = _seededGuilds.First();
         _seededGuildRoles = await _databaseContext.SeedGuildRoles(_rootSeededGuild);
         _seededGuildChannels = await _databaseContext.SeedGuildChannels(_rootSeededGuild);
@@ -68,7 +68,7 @@ public class GuildService : IDisposable
         _rootSeededGuildRole = _seededGuildRoles.First();
         _seededGuildChannelRoles =
             await _databaseContext.SeedGuildChannelRoles(_rootSeededGuildChannel, _rootSeededGuildRole);
-        _seededGuildMembers = await _databaseContext.SeedGuildMembers(_rootSeededGuild, _seededMembers.First());
+        _seededGuildMembers = await _databaseContext.SeedGuildMembers(_rootSeededGuild, _seededMembers);
         _rootSeededGuildMember = _seededGuildMembers.First();
         _seededGuildMemberRoles =
             await _databaseContext.SeedGuildMemberRoles(_rootSeededGuildMember, _rootSeededGuildRole);

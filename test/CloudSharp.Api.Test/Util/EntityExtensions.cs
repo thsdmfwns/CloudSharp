@@ -7,6 +7,8 @@ namespace CloudSharp.Api.Test.Util;
 
 public static class EntityExtensions
 {
+    #region Member
+
     public static Faker<Member> SetMemberRules(this Faker<Member> faker, string password = "password")
     {
         faker
@@ -27,6 +29,10 @@ public static class EntityExtensions
         await databaseContext.SaveChangesAsync();
         return members;
     }
+
+    #endregion
+
+    #region Share
 
     public static Faker<Data.Entities.Share> SetShareRules(
         this Faker<Data.Entities.Share> faker, Member member, string? password = null,
@@ -54,27 +60,34 @@ public static class EntityExtensions
         await databaseContext.SaveChangesAsync();
         return shares;
     }
-    
-    public static Faker<Guild> SetGuildRules(this Faker<Guild> faker, Guid memberId, Guid? guildProfileImageId = null)
+
+    #endregion
+
+    #region Guild
+
+    public static Faker<Guild> SetGuildRules(this Faker<Guild> faker, Guid? guildProfileImageId = null)
     {
         faker
             .RuleFor(p => p.GuildName, f => f.Internet.UserName())
             .RuleFor(p => p.GuildProfileImageId, guildProfileImageId)
-            .RuleFor(p => p.OwnMemberId, memberId)
             .RuleFor(p => p.CreatedOn, f => f.Date.Past().RemoveNanoSec())
             .RuleFor(p => p.UpdatedOn, f => f.Date.Recent().RemoveNanoSec());
         return faker;
     } 
     
-    public static async ValueTask<List<Guild>> SeedGuilds(this DatabaseContext databaseContext, Member member, int count = 10)
+    public static async ValueTask<List<Guild>> SeedGuilds(this DatabaseContext databaseContext, int count = 10)
     {
-        var faker = new Faker<Guild>().SetGuildRules(member.MemberId);
+        var faker = new Faker<Guild>().SetGuildRules();
         var guilds = faker.Generate(count);
         await databaseContext.Guilds.AddRangeAsync(guilds);
         await databaseContext.SaveChangesAsync();
         return guilds;
     }
-    
+
+    #endregion
+
+    #region GuildChannel
+
     public static Faker<GuildChannel> SetGuildChannelRules(this Faker<GuildChannel> faker, ulong guildId)
     {
         faker
@@ -94,28 +107,49 @@ public static class EntityExtensions
         await databaseContext.SaveChangesAsync();
         return guildChs;
     }
-    
-    public static Faker<GuildMember> SetGuildMemberRules(this Faker<GuildMember> faker, ulong guildId, Guid memberId, bool isBanned = false)
+
+    #endregion
+
+    #region GuildMember
+
+    public static Faker<GuildMember> SetGuildMemberRules(this Faker<GuildMember> faker, ulong guildId, Guid memberId)
     {
         faker
             .RuleFor(p => p.MemberName, f => f.Internet.UserName())
             .RuleFor(p => p.MemberId, memberId)
-            .RuleFor(p => p.IsBanned, isBanned)
+            .RuleFor(p => p.IsBanned, false)
+            .RuleFor(p => p.IsOwner, false)
             .RuleFor(p => p.GuildId, guildId)
             .RuleFor(p => p.CreatedOn, f => f.Date.Past().RemoveNanoSec())
             .RuleFor(p => p.UpdatedOn, f => f.Date.Recent().RemoveNanoSec());
         return faker;
     } 
     
-    public static async ValueTask<List<GuildMember>> SeedGuildMembers(this DatabaseContext databaseContext, Guild guild, Member member, bool isBanned = false, int count = 10)
+    public static async ValueTask<List<GuildMember>> SeedGuildMembers(this DatabaseContext databaseContext, Guild guild, IEnumerable<Member> members)
     {
-        var faker = new Faker<GuildMember>().SetGuildMemberRules(guild.GuildId, member.MemberId, isBanned);
-        var guildMems = faker.Generate(count);
-        await databaseContext.GuildMembers.AddRangeAsync(guildMems);
+        var generates = 
+            members.Select(member => 
+                new Faker<GuildMember>().SetGuildMemberRules(guild.GuildId, member.MemberId))
+                .Select(faker => faker.Generate(1).Single())
+                .ToList();
+        await databaseContext.GuildMembers.AddRangeAsync(generates);
         await databaseContext.SaveChangesAsync();
-        return guildMems;
+        return generates;
     }
-    
+
+    public static async ValueTask<GuildMember> UpdateGuildMember(this GuildMember guildMember,
+        DatabaseContext databaseContext, Action<GuildMember> updateAction)
+    {
+        updateAction.Invoke(guildMember);
+        databaseContext.GuildMembers.Update(guildMember);
+        await databaseContext.SaveChangesAsync();
+        return guildMember;
+    }
+
+    #endregion
+
+    #region GuildRole
+
     public static Faker<GuildRole> SetGuildRoleRules(this Faker<GuildRole> faker, ulong guildId)
     {
         faker
@@ -137,7 +171,11 @@ public static class EntityExtensions
         await databaseContext.SaveChangesAsync();
         return guildRoles;
     }
-    
+
+    #endregion
+
+    #region GuildChannelRole
+
     public static Faker<GuildChannelRole> SetGuildChannelRoleRules(this Faker<GuildChannelRole> faker, Guid guildChannelId, ulong guildRoleId)
     {
         faker
@@ -155,7 +193,11 @@ public static class EntityExtensions
         await databaseContext.SaveChangesAsync();
         return guildChannelRoles;
     }
-    
+
+    #endregion
+
+    #region GuildMemberRole
+
     public static Faker<GuildMemberRole> SetGuildMemberRoleRules(this Faker<GuildMemberRole> faker, ulong guildMemberId, ulong guildRoleId)
     {
         faker
@@ -173,4 +215,6 @@ public static class EntityExtensions
         await databaseContext.SaveChangesAsync();
         return guildMemberRoles;
     }
+
+    #endregion
 }
