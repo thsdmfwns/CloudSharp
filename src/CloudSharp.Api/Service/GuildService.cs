@@ -59,8 +59,12 @@ public class GuildService(IGuildRepository guildRepository, ILogger<IGuildServic
         return Result.OkIf(result.IsSuccess, new NotFoundError().CausedBy(result.Errors));
     }
 
-    public ValueTask<Result> DeleteGuild(ulong guildId)
+    public async ValueTask<Result> DeleteGuild(ulong guildId)
     {
-        throw new NotImplementedException();
+        var result = await guildRepository.DeleteGuild(guildId);
+        if (result.IsFailed && result.HasError<ExceptionalError>())
+            return new InternalServerError().CausedBy(result.Errors);
+        
+        return Result.OkIf(result.IsSuccess, new NotFoundError().CausedBy(result.Errors));
     }
 }

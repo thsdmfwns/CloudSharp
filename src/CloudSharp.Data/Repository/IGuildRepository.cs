@@ -10,4 +10,5 @@ public interface IGuildRepository
     ValueTask<Result<GuildDto>> FindGuildById(ulong guildId);
 
     ValueTask<Result> UpdateGuildProperty(ulong guildId, Action<Guild> updateAction);
+    ValueTask<Result> DeleteGuild(ulong guildId);
 }

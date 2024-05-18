@@ -180,4 +180,34 @@ public class GuildService : IDisposable
         Assert.That(result.HasError(x => x.GetType() == errorType));
     }
 
+    [Test]
+    [TestCase(null, null)] //success
+    public async Task DeleteGuild(ulong? guildId, Type? errorType)
+    {
+        guildId ??= _rootSeededGuild.GuildId;
+
+        var result = await _guildService.DeleteGuild(guildId.Value);
+
+        if (errorType is null)
+        {
+            Assert.That(result.IsSuccess);
+            var actual = await _databaseContext.Guilds.SingleOrDefaultAsync(x => x.GuildId == guildId);
+            var actualMembers = await _databaseContext.GuildMembers
+                .Where(x => x.GuildId == guildId).ToListAsync();
+            var actualChannels = await _databaseContext.GuildChannels
+                .Where(x => x.GuildId == guildId).ToListAsync();
+            Assert.Multiple(() =>
+            {
+                Assert.That(actual is null);
+                Assert.That(actualMembers, Is.Empty);
+                Assert.That(actualChannels, Is.Empty);
+            });
+            return;
+        }
+        
+        //fail
+        Assert.That(result.IsFailed);
+        Assert.That(result.HasError(x => x.GetType() == errorType));
+    }
+
 }

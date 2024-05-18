@@ -55,4 +55,38 @@ public class GuildRepository(DatabaseContext databaseContext) : IGuildRepository
         return Result.OkIf(saveResult.IsSuccess, 
             new Error("fail to update guild property").CausedBy(saveResult.Errors));
     }
+
+    public async ValueTask<Result> DeleteGuild(ulong guildId)
+    {
+        await using var transaction = await databaseContext.Database.BeginTransactionAsync();
+        var deleteResults = new List<Result<int>>
+        {
+            //guild channels
+            await Result.Try(
+                () => databaseContext.GuildChannels
+                    .Where(x => x.GuildId == guildId).ExecuteDeleteAsync(),
+                ex => new ExceptionalError(ex)),
+            
+            //guild members
+            await Result.Try(
+                () => databaseContext.GuildMembers.Where(x => x.GuildId == guildId).ExecuteDeleteAsync(),
+                ex => new ExceptionalError(ex)),
+            
+            //guild
+            await Result.Try(
+                () => databaseContext.Guilds.Where(x => x.GuildId == guildId).ExecuteDeleteAsync(),
+                ex => new ExceptionalError(ex)),
+        };
+        
+        var errors = deleteResults.SelectMany(x => x.Errors).ToList();
+        if (errors.Count <= 0)
+        {
+            await transaction.CommitAsync();
+            return Result.Ok();
+        }
+        
+        //has error
+        await transaction.RollbackAsync();
+        return Result.Fail(errors);
+    }
 }
