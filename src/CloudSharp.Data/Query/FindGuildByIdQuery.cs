@@ -26,6 +26,7 @@ public class FindGuildByIdQuery : IQuery<GuildDto>
         ulong GuildMemberId,
         Guid MemberId,
         bool IsBanned,
+        bool IsOwner,
         DateTime CreatedOn,
         DateTime? UpdatedOn
     );
@@ -54,14 +55,14 @@ public class FindGuildByIdQuery : IQuery<GuildDto>
 
     private record _GuildRole(
         ulong GuildId,
-        UInt64 GuildRoleId,
-        String RoleName,
+        ulong GuildRoleId,
+        string RoleName,
         DateTime? UpdatedOn,
         DateTime CreatedOn,
-        UInt32 RoleColorRed,
-        UInt32 RoleColorGreen,
-        UInt32 RoleColorBlue,
-        UInt32 RoleColorAlpha
+        uint RoleColorRed,
+        uint RoleColorGreen,
+        uint RoleColorBlue,
+        uint RoleColorAlpha
     );
 
     #endregion
@@ -82,6 +83,7 @@ public class FindGuildByIdQuery : IQuery<GuildDto>
                GuildMember.GuildMemberId,
                GuildMember.MemberId,
                GuildMember.IsBanned,
+               GuildMember.IsOwner,
                GuildMember.CreatedOn,
                GuildMember.UpdatedOn
         From cloud_sharp.GuildMembers AS GuildMember
@@ -178,6 +180,7 @@ public class FindGuildByIdQuery : IQuery<GuildDto>
                 GuildMemberId = x.GuildMemberId,
                 MemberId = x.MemberId,
                 IsBanned = x.IsBanned,
+                IsOwner = x.IsOwner,
                 CreatedOn = x.CreatedOn,
                 UpdatedOn = x.UpdatedOn,
                 HadRoles = guildMemberRolesDto.Where(role => x.GuildMemberId == role.GuildMemberId).ToList()
