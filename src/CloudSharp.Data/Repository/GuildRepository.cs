@@ -66,17 +66,17 @@ public class GuildRepository(DatabaseContext databaseContext) : IGuildRepository
             await Result.Try(
                 () => databaseContext.GuildChannels
                     .Where(x => x.GuildId == guildId).ExecuteDeleteAsync(),
-                ex => new ExceptionalError(ex)),
+                ex => new ExceptionalError("fail to delete GuildChannels by exception", ex)),
             
             //guild members
             await Result.Try(
                 () => databaseContext.GuildMembers.Where(x => x.GuildId == guildId).ExecuteDeleteAsync(),
-                ex => new ExceptionalError(ex)),
+                ex => new ExceptionalError("fail to delete GuildMembers by exception", ex)),
             
             //guild
             await Result.Try(
                 () => databaseContext.Guilds.Where(x => x.GuildId == guildId).ExecuteDeleteAsync(),
-                ex => new ExceptionalError(ex)),
+                ex => new ExceptionalError("fail to delete Guilds by exception", ex)),
         };
         
         var errors = deleteResults.SelectMany(x => x.Errors).ToList();
