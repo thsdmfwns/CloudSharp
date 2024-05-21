@@ -29,9 +29,7 @@ public class GuildMemberService : IAsyncDisposable
     private List<GuildRole> _seededGuildRoles = null!;
 
     private Guild _rootSeededGuild = null!;
-    private GuildChannel _rootSeededGuildChannel = null!;
-    private GuildMember _rootSeededGuildMember = null!;
-    private GuildRole _rootSeededGuildRole = null!;
+    private GuildMember _SeededOwner = null!;
 
     [OneTimeSetUp]
     public async Task OneTimeSetup()
@@ -61,14 +59,14 @@ public class GuildMemberService : IAsyncDisposable
         _rootSeededGuild = _seededGuilds.First();
         _seededGuildRoles = await _databaseContext.SeedGuildRoles(_rootSeededGuild);
         _seededGuildChannels = await _databaseContext.SeedGuildChannels(_rootSeededGuild);
-        _rootSeededGuildChannel = _seededGuildChannels.First();
-        _rootSeededGuildRole = _seededGuildRoles.First();
         _seededGuildChannelRoles =
-            await _databaseContext.SeedGuildChannelRoles(_rootSeededGuildChannel, _rootSeededGuildRole);
+            await _databaseContext.SeedGuildChannelRoles(_seededGuildChannels, _seededGuildRoles);
         _seededGuildMembers = await _databaseContext.SeedGuildMembers(_rootSeededGuild, _seededMembers);
-        _rootSeededGuildMember = _seededGuildMembers.First();
         _seededGuildMemberRoles =
-            await _databaseContext.SeedGuildMemberRoles(_rootSeededGuildMember, _rootSeededGuildRole);
+            await _databaseContext.SeedGuildMemberRoles(_seededGuildMembers, _seededGuildRoles);
+
+        _SeededOwner = await _faker.PickRandom(_seededGuildMembers)
+            .UpdateGuildMember(_databaseContext, x => x.IsOwner = true);
     }
 
     public async ValueTask DisposeAsync()
@@ -176,4 +174,6 @@ public class GuildMemberService : IAsyncDisposable
         Assert.That(result.IsFailed, Is.True);
         Assert.That(result.HasError(x => x.GetType() == errorType), Is.True);
     }
+    
+    
 }

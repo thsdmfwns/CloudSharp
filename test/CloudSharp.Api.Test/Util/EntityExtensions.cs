@@ -185,36 +185,46 @@ public static class EntityExtensions
         return faker;
     } 
     
-    public static async ValueTask<List<GuildChannelRole>> SeedGuildChannelRoles(this DatabaseContext databaseContext, GuildChannel guildChannel, GuildRole guildRole, int count = 10)
+    public static async ValueTask<List<GuildChannelRole>> SeedGuildChannelRoles(this DatabaseContext databaseContext,
+        IEnumerable<GuildChannel> guildChannels, IEnumerable<GuildRole> guildRoles, int count = 10)
     {
-        var faker = new Faker<GuildChannelRole>().SetGuildChannelRoleRules(guildChannel.GuildChannelId, guildRole.GuildRoleId);
-        var guildChannelRoles = faker.Generate(count);
-        await databaseContext.GuildChannelRoles.AddRangeAsync(guildChannelRoles);
+        var generated = 
+            (guildChannels.SelectMany(guildChannel => guildRoles,
+                (guildChannel, guildRole) =>
+                    new Faker<GuildChannelRole>()
+                        .SetGuildChannelRoleRules(guildChannel.GuildChannelId, guildRole.GuildRoleId))
+            .Select(faker => faker.Generate(1).Single())).ToList();
+
+        await databaseContext.GuildChannelRoles.AddRangeAsync(generated);
         await databaseContext.SaveChangesAsync();
-        return guildChannelRoles;
+        return generated;
     }
 
     #endregion
 
     #region GuildMemberRole
 
-    public static Faker<GuildMemberRole> SetGuildMemberRoleRules(this Faker<GuildMemberRole> faker, ulong guildMemberId, ulong guildRoleId)
+    public static Faker<GuildMemberRole> SetGuildMemberRoleRules(this Faker<GuildMemberRole> faker, ulong guildMemberId, IEnumerable<ulong> guildRoleIds)
     {
         faker
             .RuleFor(p => p.GuildMemberId, guildMemberId)
-            .RuleFor(p => p.GuildRoleId, guildRoleId)
+            .RuleFor(p => p.GuildRoleId, f => f.PickRandom(guildRoleIds))
             .RuleFor(p => p.CreatedOn, f => f.Date.Past().RemoveNanoSec());
         return faker;
-    } 
-    
-    public static async ValueTask<List<GuildMemberRole>> SeedGuildMemberRoles(this DatabaseContext databaseContext, GuildMember guildMember, GuildRole guildRole, int count = 10)
-    {
-        var faker = new Faker<GuildMemberRole>().SetGuildMemberRoleRules(guildMember.GuildMemberId, guildRole.GuildRoleId);
-        var guildMemberRoles = faker.Generate(count);
-        await databaseContext.GuildMemberRoles.AddRangeAsync(guildMemberRoles);
-        await databaseContext.SaveChangesAsync();
-        return guildMemberRoles;
     }
 
+    public static async ValueTask<List<GuildMemberRole>> SeedGuildMemberRoles(this DatabaseContext databaseContext,
+        IEnumerable<GuildMember> guildMembers, IEnumerable<GuildRole> guildRoles, int count = 10)
+    {
+        var roleIds = guildRoles.Select(x => x.GuildRoleId).ToList();
+        var generated = guildMembers
+            .Select(member => new Faker<GuildMemberRole>().SetGuildMemberRoleRules(member.GuildMemberId, roleIds))
+            .Select(f => f.Generate(1).Single())
+            .ToList();
+        await databaseContext.GuildMemberRoles.AddRangeAsync(generated);
+        await databaseContext.SaveChangesAsync();
+        return generated;
+    }
+    
     #endregion
 }
