@@ -174,6 +174,42 @@ public class GuildMemberService : IAsyncDisposable
         Assert.That(result.IsFailed, Is.True);
         Assert.That(result.HasError(x => x.GetType() == errorType), Is.True);
     }
+
+    [Test]
+    [TestCase(null, null, null, false)] //success
+    [TestCase(ulong.MaxValue, null, typeof(NotFoundError), false)] //invalid id
+    [TestCase(null, ulong.MaxValue, typeof(NotFoundError), false)] //invalid id
+    [TestCase(null, null, typeof(BadRequestError), true)] //owner is not owner
+    public async Task ChangeGuildOwner(ulong? ownerGuildMemberId, ulong? destinyGuildMemberId, Type? errorType, bool ownerIsNotOwner = false)
+    {
+        var seededMemberIdsWithoutOwner = 
+            _seededGuildMembers
+            .Where(x => x.GuildMemberId != _SeededOwner.GuildMemberId)
+            .Select(x => x.GuildMemberId)
+            .ToList();
+        
+        ownerGuildMemberId ??= ownerIsNotOwner ? _faker.PickRandom(seededMemberIdsWithoutOwner) : _SeededOwner.GuildMemberId;
+        destinyGuildMemberId ??= _faker.PickRandom(seededMemberIdsWithoutOwner);
+
+        var result = await _guildMemberService.ChangeGuildOwner(ownerGuildMemberId.Value, destinyGuildMemberId.Value);
+        
+        if (errorType is null)
+        {
+            Assert.That(result.IsSuccess);
+            var actualOwner = await _databaseContext.GuildMembers.FindAsync(ownerGuildMemberId.Value);
+            var actualDestiny = await _databaseContext.GuildMembers.FindAsync(destinyGuildMemberId.Value);
+            Assert.Multiple(() =>
+            {
+                Assert.That(actualOwner!.IsOwner, Is.False);
+                Assert.That(actualDestiny!.IsOwner, Is.True);
+            });
+            return;
+        }
+        
+        //fail
+        Assert.That(result.IsFailed, Is.True);
+        Assert.That(result.HasError(x => x.GetType() == errorType), Is.True);
+    }
     
     
 }

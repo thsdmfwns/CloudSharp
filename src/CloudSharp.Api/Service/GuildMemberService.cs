@@ -73,9 +73,25 @@ public class GuildMemberService(IGuildMemberRepository _guildMemberRepository) :
         return Result.OkIf(result.IsSuccess, new NotFoundError().CausedBy(result.Errors));
     }
 
-    public ValueTask<Result> ChangeGuildOwner(ulong fromGuildMemberId, ulong toGuildMemberId)
+    public async ValueTask<Result> ChangeGuildOwner(ulong ownerGuildMemberId, ulong destinyGuildMemberId)
     {
-        throw new NotImplementedException();
+        var isOwnerResult = await _guildMemberRepository.IsOwnerMember(ownerGuildMemberId);
+        if (isOwnerResult.IsFailed)
+        {
+            return new NotFoundError().CausedBy(isOwnerResult.Errors);
+        }
+        if (!isOwnerResult.Value)
+        {
+            return new BadRequestError().CausedBy("member is not owner");
+        }
+        
+        var changeResult = await _guildMemberRepository.ChangeOwnerMember(ownerGuildMemberId, destinyGuildMemberId);
+        if (changeResult.IsFailed && changeResult.HasError<ExceptionalError>())
+        {
+            return new InternalServerError().CausedBy(changeResult.Errors);
+        }
+
+        return Result.OkIf(changeResult.IsSuccess, new NotFoundError().CausedBy(changeResult.Errors));
     }
 
     public ValueTask<Result> DeleteGuildMember(ulong guildMemberId)

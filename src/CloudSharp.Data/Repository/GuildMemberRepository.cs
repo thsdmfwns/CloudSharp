@@ -43,6 +43,17 @@ public class GuildMemberRepository(DatabaseContext databaseContext) : IGuildMemb
         return result.IsFailed ? Result.Fail(result.Errors) : result.Value;
     }
 
+    public async ValueTask<Result<bool>> IsOwnerMember(ulong guildMemberId)
+    {
+        var member = await databaseContext.GuildMembers.FindAsync(guildMemberId);
+        if (member is null)
+        {
+            return Result.Fail("member not found");
+        }
+
+        return member.IsOwner;
+    }
+
     public async ValueTask<Result> UpdateGuildMember(ulong guildMemberId, Action<GuildMember> updateAction)
     {
         var guildMember = await databaseContext.GuildMembers.FindAsync(guildMemberId);
@@ -53,5 +64,21 @@ public class GuildMemberRepository(DatabaseContext databaseContext) : IGuildMemb
         updateAction.Invoke(guildMember);
         var result = await databaseContext.SaveChangesAsyncWithResult();
         return Result.OkIf(result.IsSuccess, new Error("fail to UpdateGuildMember").CausedBy(result.Errors));
+    }
+
+    public async ValueTask<Result> ChangeOwnerMember(ulong ownerGuildMemberId, ulong destinyGuildMemberId)
+    {
+        var from = await databaseContext.GuildMembers.FindAsync(ownerGuildMemberId);
+        var to = await databaseContext.GuildMembers.FindAsync(destinyGuildMemberId);
+        if (from is null || to is null)
+        {
+            return Result.Fail("guild member not found");
+        }
+
+        from.IsOwner = false;
+        to.IsOwner = true;
+        var saveResult = await databaseContext.SaveChangesAsyncWithResult();
+        
+        return Result.OkIf(saveResult.IsSuccess, new Error("fail to ChangeOwnerMember").CausedBy(saveResult.Errors));
     }
 }

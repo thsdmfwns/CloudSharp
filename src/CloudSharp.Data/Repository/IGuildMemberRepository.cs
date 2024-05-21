@@ -8,5 +8,7 @@ public interface IGuildMemberRepository
 {
     ValueTask<Result<ulong>> AddGuildMember(GuildMember guildMember);
     ValueTask<Result<GuildMemberDto>> FindGuildMemberByGuildMemberId(ulong guildMemberId);
+    ValueTask<Result<bool>> IsOwnerMember(ulong guildMemberId);
     ValueTask<Result> UpdateGuildMember(ulong guildMemberId, Action<GuildMember> updateAction);
+    ValueTask<Result> ChangeOwnerMember(ulong ownerGuildMemberId, ulong destinyGuildMemberId);
 }
