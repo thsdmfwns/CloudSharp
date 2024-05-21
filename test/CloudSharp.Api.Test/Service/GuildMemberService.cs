@@ -29,8 +29,8 @@ public class GuildMemberService : IAsyncDisposable
     private List<GuildRole> _seededGuildRoles = null!;
 
     private Guild _rootSeededGuild = null!;
-    private GuildMember _SeededOwner = null!;
-    private List<GuildMember> _SeededMembersWithoutOwner = null!;
+    private GuildMember _seededOwner = null!;
+    private List<GuildMember> _seededGuildMembersWithoutOwner = null!;
 
     [OneTimeSetUp]
     public async Task OneTimeSetup()
@@ -66,10 +66,10 @@ public class GuildMemberService : IAsyncDisposable
         _seededGuildMemberRoles =
             await _databaseContext.SeedGuildMemberRoles(_seededGuildMembers, _seededGuildRoles);
 
-        _SeededOwner = await _faker.PickRandom(_seededGuildMembers)
+        _seededOwner = await _faker.PickRandom(_seededGuildMembers)
             .UpdateGuildMember(_databaseContext, x => x.IsOwner = true);
-        _SeededMembersWithoutOwner = _seededGuildMembers
-            .Where(x => x.GuildMemberId != _SeededOwner.GuildMemberId)
+        _seededGuildMembersWithoutOwner = _seededGuildMembers
+            .Where(x => x.GuildMemberId != _seededOwner.GuildMemberId)
             .ToList();
     }
 
@@ -186,9 +186,9 @@ public class GuildMemberService : IAsyncDisposable
     [TestCase(null, null, typeof(BadRequestError), true)] //owner is not owner
     public async Task ChangeGuildOwner(ulong? ownerGuildMemberId, ulong? destinyGuildMemberId, Type? errorType, bool ownerIsNotOwner = false)
     {
-        var seededMemberIdsWithoutOwner = _SeededMembersWithoutOwner.Select(x => x.GuildMemberId).ToList();
+        var seededMemberIdsWithoutOwner = _seededGuildMembersWithoutOwner.Select(x => x.GuildMemberId).ToList();
         
-        ownerGuildMemberId ??= ownerIsNotOwner ? _faker.PickRandom(seededMemberIdsWithoutOwner) : _SeededOwner.GuildMemberId;
+        ownerGuildMemberId ??= ownerIsNotOwner ? _faker.PickRandom(seededMemberIdsWithoutOwner) : _seededOwner.GuildMemberId;
         destinyGuildMemberId ??= _faker.PickRandom(seededMemberIdsWithoutOwner);
 
         var result = await _guildMemberService.ChangeGuildOwner(ownerGuildMemberId.Value, destinyGuildMemberId.Value);
@@ -217,8 +217,8 @@ public class GuildMemberService : IAsyncDisposable
     [TestCase(null, typeof(BadRequestError), true)] //member is owner
     public async Task DeleteGuildMember(ulong? guildMemberId, Type? errorType, bool memberIsOwner = false)
     {
-        var seededMemberIdsWithoutOwner = _SeededMembersWithoutOwner.Select(x => x.GuildMemberId).ToList();
-        guildMemberId ??= memberIsOwner ? _SeededOwner.GuildMemberId : seededMemberIdsWithoutOwner.First();
+        var seededMemberIdsWithoutOwner = _seededGuildMembersWithoutOwner.Select(x => x.GuildMemberId).ToList();
+        guildMemberId ??= memberIsOwner ? _seededOwner.GuildMemberId : seededMemberIdsWithoutOwner.First();
 
         var result = await _guildMemberService.DeleteGuildMember(guildMemberId.Value);
         
