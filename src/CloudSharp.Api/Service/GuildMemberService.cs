@@ -1,4 +1,5 @@
 using CloudSharp.Api.Error;
+using CloudSharp.Api.Util;
 using CloudSharp.Data.Entities;
 using CloudSharp.Data.Repository;
 using CloudSharp.Share.DTO;
@@ -57,9 +58,19 @@ public class GuildMemberService(IGuildMemberRepository _guildMemberRepository) :
         return Result.OkIf(result.IsSuccess, new NotFoundError().CausedBy(result.Errors));
     }
 
-    public ValueTask<Result> UpdateGuildMemberName(ulong guildMemberId, string guildMemberName)
+    public async ValueTask<Result> UpdateGuildMemberName(ulong guildMemberId, string guildMemberName)
     {
-        throw new NotImplementedException();
+        if (!guildMemberName.IsMemberName())
+        {
+            return new BadRequestError().CausedBy("Bad name");
+        }
+        var result = await _guildMemberRepository.UpdateGuildMember(guildMemberId, x => x.MemberName = guildMemberName);
+        if (result.IsFailed && result.HasError<ExceptionalError>())
+        {
+            return new InternalServerError().CausedBy(result.Errors);
+        }
+
+        return Result.OkIf(result.IsSuccess, new NotFoundError().CausedBy(result.Errors));
     }
 
     public ValueTask<Result> ChangeGuildOwner(ulong fromGuildMemberId, ulong toGuildMemberId)

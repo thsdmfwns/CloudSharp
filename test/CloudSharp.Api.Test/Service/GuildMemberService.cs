@@ -150,5 +150,30 @@ public class GuildMemberService : IAsyncDisposable
         //fail
         Assert.That(result.IsFailed, Is.True);
         Assert.That(result.HasError(x => x.GetType() == errorType), Is.True);
-    } 
+    }
+
+    [Test]
+    [TestCase(null, null, null)] // success
+    [TestCase(ulong.MaxValue, null, typeof(NotFoundError))] //invalid id
+    [TestCase(null, "", typeof(BadRequestError))] // invalid name
+    [TestCase(null, "<script></script>", typeof(BadRequestError))] // invalid name
+    public async Task UpdateGuildMemberName(ulong? guildMemberId, string? guildMemberName, Type? errorType)
+    {
+        guildMemberId ??= _seededGuildMembers.First().GuildMemberId;
+        guildMemberName ??= _faker.Internet.UserName().ToLower();
+
+        var result = await _guildMemberService.UpdateGuildMemberName(guildMemberId.Value, guildMemberName);
+
+        if (errorType is null)
+        {
+            Assert.That(result.IsSuccess);
+            var actual = await _databaseContext.GuildMembers.FindAsync(guildMemberId.Value);
+            Assert.That(actual!.MemberName, Is.EqualTo(guildMemberName));
+            return;
+        }
+        
+        //fail
+        Assert.That(result.IsFailed, Is.True);
+        Assert.That(result.HasError(x => x.GetType() == errorType), Is.True);
+    }
 }
