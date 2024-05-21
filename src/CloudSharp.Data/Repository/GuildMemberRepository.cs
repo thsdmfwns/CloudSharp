@@ -81,4 +81,33 @@ public class GuildMemberRepository(DatabaseContext databaseContext) : IGuildMemb
         
         return Result.OkIf(saveResult.IsSuccess, new Error("fail to ChangeOwnerMember").CausedBy(saveResult.Errors));
     }
+
+    public async ValueTask<Result> DeleteGuildMember(ulong guildMemberId)
+    {
+        await using var transaction = await databaseContext.Database.BeginTransactionAsync();
+        var deleteResults = new List<Result<int>>
+        {
+            //guild member roles
+            await Result.Try(
+                () => databaseContext.GuildMemberRoles.Where(x => x.GuildMemberId == guildMemberId).ExecuteDeleteAsync(),
+                ex => new ExceptionalError("fail to delete GuildMemberRoles by exception", ex)),
+            
+            //guild members
+            await Result.Try(
+                () => databaseContext.GuildMembers.Where(x => x.GuildMemberId == guildMemberId).ExecuteDeleteAsync(),
+                ex => new ExceptionalError("fail to delete GuildMembers by exception", ex)),
+        };
+
+        var errors = deleteResults.SelectMany(x => x.Errors).ToList();
+        if (errors.Count <= 0)
+        {
+            await transaction.CommitAsync();
+            var count = deleteResults.Sum(x => x.Value);
+            return Result.OkIf(count > 0, new Error("deleted count is less than 0"));
+        }
+
+        //has error
+        await transaction.RollbackAsync();
+        return Result.Fail(errors);
+    }
 }

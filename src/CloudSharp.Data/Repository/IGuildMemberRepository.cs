@@ -11,4 +11,5 @@ public interface IGuildMemberRepository
     ValueTask<Result<bool>> IsOwnerMember(ulong guildMemberId);
     ValueTask<Result> UpdateGuildMember(ulong guildMemberId, Action<GuildMember> updateAction);
     ValueTask<Result> ChangeOwnerMember(ulong ownerGuildMemberId, ulong destinyGuildMemberId);
+    ValueTask<Result> DeleteGuildMember(ulong guildMemberId);
 }

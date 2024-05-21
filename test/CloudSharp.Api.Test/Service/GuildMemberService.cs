@@ -30,6 +30,7 @@ public class GuildMemberService : IAsyncDisposable
 
     private Guild _rootSeededGuild = null!;
     private GuildMember _SeededOwner = null!;
+    private List<GuildMember> _SeededMembersWithoutOwner = null!;
 
     [OneTimeSetUp]
     public async Task OneTimeSetup()
@@ -67,6 +68,9 @@ public class GuildMemberService : IAsyncDisposable
 
         _SeededOwner = await _faker.PickRandom(_seededGuildMembers)
             .UpdateGuildMember(_databaseContext, x => x.IsOwner = true);
+        _SeededMembersWithoutOwner = _seededGuildMembers
+            .Where(x => x.GuildMemberId != _SeededOwner.GuildMemberId)
+            .ToList();
     }
 
     public async ValueTask DisposeAsync()
@@ -182,11 +186,7 @@ public class GuildMemberService : IAsyncDisposable
     [TestCase(null, null, typeof(BadRequestError), true)] //owner is not owner
     public async Task ChangeGuildOwner(ulong? ownerGuildMemberId, ulong? destinyGuildMemberId, Type? errorType, bool ownerIsNotOwner = false)
     {
-        var seededMemberIdsWithoutOwner = 
-            _seededGuildMembers
-            .Where(x => x.GuildMemberId != _SeededOwner.GuildMemberId)
-            .Select(x => x.GuildMemberId)
-            .ToList();
+        var seededMemberIdsWithoutOwner = _SeededMembersWithoutOwner.Select(x => x.GuildMemberId).ToList();
         
         ownerGuildMemberId ??= ownerIsNotOwner ? _faker.PickRandom(seededMemberIdsWithoutOwner) : _SeededOwner.GuildMemberId;
         destinyGuildMemberId ??= _faker.PickRandom(seededMemberIdsWithoutOwner);
@@ -211,5 +211,34 @@ public class GuildMemberService : IAsyncDisposable
         Assert.That(result.HasError(x => x.GetType() == errorType), Is.True);
     }
     
+    [Test]
+    [TestCase(null, null, false)] //success
+    [TestCase(ulong.MaxValue, typeof(NotFoundError), false)] //invalid id
+    [TestCase(null, typeof(BadRequestError), true)] //member is owner
+    public async Task DeleteGuildMember(ulong? guildMemberId, Type? errorType, bool memberIsOwner = false)
+    {
+        var seededMemberIdsWithoutOwner = _SeededMembersWithoutOwner.Select(x => x.GuildMemberId).ToList();
+        guildMemberId ??= memberIsOwner ? _SeededOwner.GuildMemberId : seededMemberIdsWithoutOwner.First();
+
+        var result = await _guildMemberService.DeleteGuildMember(guildMemberId.Value);
+        
+        if (errorType is null)
+        {
+            Assert.That(result.IsSuccess);
+            var actualMember = await _databaseContext.GuildMembers.SingleOrDefaultAsync(x => x.GuildMemberId == guildMemberId);
+            var actualRoles = await _databaseContext.GuildMemberRoles
+                .Where(x => x.GuildMemberId == guildMemberId).ToListAsync();
+            Assert.Multiple(() =>
+            {
+                Assert.That(actualMember is null);
+                Assert.That(actualRoles, Is.Empty);
+            });
+            return;
+        }
+        
+        //fail
+        Assert.That(result.IsFailed, Is.True);
+        Assert.That(result.HasError(x => x.GetType() == errorType), Is.True);
+    }
     
 }

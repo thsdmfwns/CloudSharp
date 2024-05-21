@@ -85,7 +85,8 @@ public class GuildRepository(DatabaseContext databaseContext) : IGuildRepository
         if (errors.Count <= 0)
         {
             await transaction.CommitAsync();
-            return Result.Ok();
+            var count = deleteResults.Sum(x => x.Value);
+            return Result.OkIf(count > 0, new Error("deleted count is less than 0"));
         }
         
         //has error

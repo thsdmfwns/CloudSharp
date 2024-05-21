@@ -94,8 +94,22 @@ public class GuildMemberService(IGuildMemberRepository _guildMemberRepository) :
         return Result.OkIf(changeResult.IsSuccess, new NotFoundError().CausedBy(changeResult.Errors));
     }
 
-    public ValueTask<Result> DeleteGuildMember(ulong guildMemberId)
+    public async ValueTask<Result> DeleteGuildMember(ulong guildMemberId)
     {
-        throw new NotImplementedException();
+        var isOwnerResult = await _guildMemberRepository.IsOwnerMember(guildMemberId);
+        if (isOwnerResult.IsFailed)
+        {
+            return new NotFoundError().CausedBy(isOwnerResult.Errors);
+        }
+        if (isOwnerResult.Value)
+        {
+            return new BadRequestError().CausedBy("member is owner");
+        }
+        
+        var result = await _guildMemberRepository.DeleteGuildMember(guildMemberId);
+        if (result.IsFailed && result.HasError<ExceptionalError>())
+            return new InternalServerError().CausedBy(result.Errors);
+        
+        return Result.OkIf(result.IsSuccess, new NotFoundError().CausedBy(result.Errors));
     }
 }
