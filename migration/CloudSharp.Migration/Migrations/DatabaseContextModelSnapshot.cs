@@ -35,7 +35,7 @@ namespace CloudSharp.Data.Migrations
 
                     b.Property<Guid?>("GuildProfileImageId")
                         .HasColumnType("char(36)");
-                    
+
                     b.Property<DateTime?>("UpdatedOn")
                         .HasColumnType("datetime(6)");
 
@@ -397,8 +397,6 @@ namespace CloudSharp.Data.Migrations
             modelBuilder.Entity("CloudSharp.Data.Entities.Member", b =>
                 {
                     b.Navigation("GuildMembers");
-
-                    b.Navigation("Guilds");
 
                     b.Navigation("Shares");
                 });
