@@ -17,8 +17,9 @@ public class GuildRole
     public required uint RoleColorGreen { get; set; }
     public required uint RoleColorAlpha { get; set; }
     
-    [ForeignKey(nameof(GuildId))] 
     public required ulong GuildId { get; init; }
+    
+    [ForeignKey(nameof(GuildId))] 
     public Guild Guild { get; init; } = null!;
     public ICollection<GuildMemberRole> GuildMemberRoles { get; } = new List<GuildMemberRole>();
     public ICollection<GuildChannelRole> GuildChannelRoles { get; } = new List<GuildChannelRole>();

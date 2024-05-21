@@ -13,8 +13,8 @@ public class GuildChannel
     [StringLength(256, MinimumLength = 3)]
     public required string GuildChannelName { get; set; }
     
-    [ForeignKey(nameof(GuildId))] 
     public required ulong GuildId { get; init; }
+    [ForeignKey(nameof(GuildId))] 
     public Guild Guild { get; init; } = null!;
     
     public ICollection<GuildChannelRole> GuildChannelRoles { get; } = new List<GuildChannelRole>();

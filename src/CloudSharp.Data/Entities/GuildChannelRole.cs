@@ -13,8 +13,8 @@ public class GuildChannelRole
     public required Guid GuildChannelId { get; set; }
     public GuildChannel GuildChannel { get; init; } = null!;
     
-    [ForeignKey(nameof(GuildRoleId))] 
     public required ulong GuildRoleId { get; init; }
+    [ForeignKey(nameof(GuildRoleId))] 
     public GuildRole GuildRole { get; init; } = null!;
     
     public DateTime CreatedOn { get; init; } = DateTime.UtcNow;

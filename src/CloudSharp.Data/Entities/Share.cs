@@ -10,8 +10,9 @@ public class Share
 {
     [Key]
     public required Guid ShareId { get; init; }
-    [ForeignKey(nameof(MemberId))]
     public required Guid MemberId { get; init; }
+    
+    [ForeignKey(nameof(MemberId))]
     public Member Member { get; init; } = null!;
     
     [Key]

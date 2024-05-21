@@ -15,12 +15,14 @@ public class GuildMember
     public bool IsBanned { get; set; }
     public bool IsOwner { get; set; }
     
-    [ForeignKey(nameof(GuildId))] 
     public required ulong GuildId { get; init; }
+    
+    [ForeignKey(nameof(GuildId))] 
     public Guild Guild { get; init; } = null!;
 
-    [ForeignKey(nameof(MemberId))] 
     public required Guid MemberId { get; init; }
+    
+    [ForeignKey(nameof(MemberId))] 
     public Member Member { get; init; } = null!;
 
     public ICollection<GuildMemberRole> GuildMemberRoles { get; } = new List<GuildMemberRole>();
