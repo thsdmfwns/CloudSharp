@@ -31,14 +31,30 @@ public class GuildMemberService(IGuildMemberRepository _guildMemberRepository) :
         return result.Value;
     }
 
-    public ValueTask<GuildMemberDto> GetGuildMember(ulong guildMemberId)
+    public async ValueTask<Result<GuildMemberDto>> GetGuildMember(ulong guildMemberId)
     {
-        throw new NotImplementedException();
+        var result = await _guildMemberRepository.FindGuildMemberByGuildMemberId(guildMemberId);
+        if (result.IsFailed && result.HasError<ExceptionalError>())
+        {
+            return new InternalServerError().CausedBy(result.Errors);
+        }
+        if (result.IsFailed)
+        {
+            return new NotFoundError().CausedBy(result.Errors);
+        }
+
+        return result.Value;
     }
 
-    public ValueTask<Result> BanGuildMember(ulong guildMemberId)
+    public async ValueTask<Result> BanGuildMember(ulong guildMemberId)
     {
-        throw new NotImplementedException();
+        var result = await _guildMemberRepository.UpdateGuildMember(guildMemberId, x => x.IsBanned = true);
+        if (result.IsFailed && result.HasError<ExceptionalError>())
+        {
+            return new InternalServerError().CausedBy(result.Errors);
+        }
+
+        return Result.OkIf(result.IsSuccess, new NotFoundError().CausedBy(result.Errors));
     }
 
     public ValueTask<Result> UpdateGuildMemberName(ulong guildMemberId, string guildMemberName)

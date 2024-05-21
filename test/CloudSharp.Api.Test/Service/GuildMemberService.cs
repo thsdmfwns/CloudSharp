@@ -3,9 +3,11 @@ using Bogus;
 using CloudSharp.Api.Error;
 using CloudSharp.Api.Service;
 using CloudSharp.Api.Test.Util;
+using CloudSharp.Api.Util;
 using CloudSharp.Data;
 using CloudSharp.Data.Entities;
 using CloudSharp.Data.Repository;
+using CloudSharp.Share.DTO.EqualityComparer;
 using Microsoft.EntityFrameworkCore;
 using Respawn;
 
@@ -103,4 +105,50 @@ public class GuildMemberService : IAsyncDisposable
         Assert.That(result.IsFailed, Is.True);
         Assert.That(result.HasError(x => x.GetType() == errorType), Is.True);
     }
+
+    [Test]
+    [TestCase(null, null)] //success
+    [TestCase(ulong.MaxValue, typeof(NotFoundError))] // invalid id
+    public async Task GetGuildMember(ulong? guildMemberId, Type? errorType)
+    {
+        guildMemberId ??= _seededGuildMembers.First().GuildMemberId;
+
+        var result = await _guildMemberService.GetGuildMember(guildMemberId.Value);
+
+        if (errorType is null)
+        {
+            Assert.That(result.IsSuccess);
+            var expect = _rootSeededGuild
+                .SeedToGuildMemberDtos(_seededGuildMembers, _seededGuildMemberRoles, _seededGuildRoles)
+                .First(x => x.GuildMemberId == guildMemberId);
+            
+            Assert.That(result.Value, Is.EqualTo(expect).Using(new GuildMemberDtoEqualityCompare()));
+            return;
+        }
+        
+        //fail
+        Assert.That(result.IsFailed, Is.True);
+        Assert.That(result.HasError(x => x.GetType() == errorType), Is.True);
+    }
+    
+    [Test]
+    [TestCase(null, null)] //success
+    [TestCase(ulong.MaxValue, typeof(NotFoundError))] // invalid id
+    public async Task BanGuildMember(ulong? guildMemberId, Type? errorType)
+    {
+        guildMemberId ??= _seededGuildMembers.First().GuildMemberId;
+
+        var result = await _guildMemberService.BanGuildMember(guildMemberId.Value);
+        if (errorType is null)
+        {
+            Assert.That(result.IsSuccess);
+            var actual = await _databaseContext.GuildMembers.FindAsync(guildMemberId.Value);
+            Assert.That(actual!.IsBanned, Is.True);
+            return;
+        }
+        
+        //fail
+        Assert.That(result.IsFailed, Is.True);
+        Assert.That(result.HasError(x => x.GetType() == errorType), Is.True);
+    } 
 }

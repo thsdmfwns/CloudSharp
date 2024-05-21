@@ -1,4 +1,5 @@
 using CloudSharp.Data.Entities;
+using CloudSharp.Share.DTO;
 using FluentResults;
 
 namespace CloudSharp.Data.Repository;
@@ -6,4 +7,6 @@ namespace CloudSharp.Data.Repository;
 public interface IGuildMemberRepository
 {
     ValueTask<Result<ulong>> AddGuildMember(GuildMember guildMember);
+    ValueTask<Result<GuildMemberDto>> FindGuildMemberByGuildMemberId(ulong guildMemberId);
+    ValueTask<Result> UpdateGuildMember(ulong guildMemberId, Action<GuildMember> updateAction);
 }
