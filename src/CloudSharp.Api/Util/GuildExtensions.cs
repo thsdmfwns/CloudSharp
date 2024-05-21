@@ -40,6 +40,7 @@ public static class GuildExtensions
             GuildMemberId = entity.GuildMemberId,
             MemberId = entity.MemberId,
             IsBanned = entity.IsBanned,
+            IsOwner = entity.IsOwner,
             CreatedOn = entity.CreatedOn,
             UpdatedOn = entity.UpdatedOn,
             HadRoles = entity.GuildMemberRoles.Select(x => x.ToDto()).ToList()

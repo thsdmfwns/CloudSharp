@@ -5,7 +5,7 @@ namespace CloudSharp.Api.Service;
 
 public interface IGuildMemberService
 {
-    ValueTask<Result<ulong>> AddGuildMember(Guid memberId, ulong guildId);
+    ValueTask<Result<ulong>> AddGuildMember(Guid memberId, ulong guildId, string memberName);
     ValueTask<GuildMemberDto> GetGuildMember(ulong guildMemberId);
     ValueTask<Result> BanGuildMember(ulong guildMemberId);
     ValueTask<Result> UpdateGuildMemberName(ulong guildMemberId, string guildMemberName);
