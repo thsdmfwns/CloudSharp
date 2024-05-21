@@ -1,4 +1,5 @@
 using CloudSharp.Data.Entities;
+using CloudSharp.Data.Exception;
 using CloudSharp.Data.Query;
 using CloudSharp.Data.Util;
 using CloudSharp.Share.DTO;
@@ -25,7 +26,8 @@ public class GuildRepository(DatabaseContext databaseContext) : IGuildRepository
         var connectionString = databaseContext.Database.GetConnectionString();
         if (connectionString is null)
         {
-            return new Error("connectionString not found");
+            return new ExceptionalError(new DatabaseConnectionNotFoundException(
+                "Can not find Connection string at FindGuildById", Environment.StackTrace));
         }
         var query = new FindGuildByIdQuery
         {
