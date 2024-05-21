@@ -20,6 +20,7 @@ public static class SeedExtensions
                 GuildMemberId = x.GuildMemberId,
                 MemberId = x.MemberId,
                 IsBanned = x.IsBanned,
+                IsOwner = x.IsOwner,
                 CreatedOn = x.CreatedOn,
                 UpdatedOn = x.UpdatedOn,
                 HadRoles = seededGuildMemberRoles

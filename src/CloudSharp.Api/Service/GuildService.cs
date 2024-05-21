@@ -9,7 +9,7 @@ namespace CloudSharp.Api.Service;
 
 public class GuildService(IGuildRepository guildRepository, ILogger<IGuildService> logger) : IGuildService
 {
-    public async ValueTask<Result<ulong>> CreateGuild(Guid ownerMemberId, string guildName, Guid? guildProfileId)
+    public async ValueTask<Result<ulong>> CreateGuild(string guildName, Guid? guildProfileId)
     {
         var guild = new Guild
         {

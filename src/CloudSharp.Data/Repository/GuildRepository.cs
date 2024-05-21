@@ -11,7 +11,7 @@ public class GuildRepository(DatabaseContext databaseContext) : IGuildRepository
 {
     public async ValueTask<Result<ulong>> InsertGuild(Guild guild)
     {
-        var result = await databaseContext.Guilds.AddAsync(guild);
+        await databaseContext.Guilds.AddAsync(guild);
         var saveResult = await databaseContext.SaveChangesAsyncWithResult();
         if (saveResult.IsFailed)
         {

@@ -112,14 +112,12 @@ public class GuildService : IDisposable
     }
 
     [Test]
-    [TestCase(null, null, null, null)] //success
-    [TestCase("", null, null, typeof(InternalServerError))] //invalid memberId
-    public async Task CreateGuild(string? ownerMemberIdString, string? guildName, Guid? guildProfileId, Type? errorType)
+    [TestCase(null, null, null)] //success
+    public async Task CreateGuild(string? guildName, Guid? guildProfileId, Type? errorType)
     {
-        var ownerMemberId = ownerMemberIdString?.ToGuid() ?? _seededMembers.First().ToMemberDto().MemberId;
         guildName ??= _faker.Name.JobTitle();
 
-        var result = await _guildService.CreateGuild(ownerMemberId, guildName, guildProfileId);
+        var result = await _guildService.CreateGuild(guildName, guildProfileId);
         if (errorType is null)
         {
             Assert.That(result.IsSuccess);
