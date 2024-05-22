@@ -49,7 +49,7 @@ public class GuildMemberService(IGuildMemberRepository _guildMemberRepository) :
 
     public async ValueTask<Result<GuildMemberDto>> GetOwnerGuildMember(ulong guildId)
     {
-        var result = await _guildMemberRepository.FindOwnerGuildMemberByGuildId(guildId);
+        var result = await _guildMemberRepository.FindOwnerByGuildId(guildId);
         if (result.IsFailed && result.HasError<ExceptionalError>())
         {
             return new InternalServerError().CausedBy(result.Errors);

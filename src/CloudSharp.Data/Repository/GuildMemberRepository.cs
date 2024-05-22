@@ -43,7 +43,7 @@ public class GuildMemberRepository(DatabaseContext databaseContext) : IGuildMemb
         return result.IsFailed ? Result.Fail(result.Errors) : result.Value;
     }
 
-    public async ValueTask<Result<GuildMemberDto>> FindOwnerGuildMemberByGuildId(ulong guildId)
+    public async ValueTask<Result<GuildMemberDto>> FindOwnerByGuildId(ulong guildId)
     {
         var connectionString = databaseContext.Database.GetConnectionString();
         if (connectionString is null)
