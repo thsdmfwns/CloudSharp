@@ -43,6 +43,27 @@ public class GuildMemberRepository(DatabaseContext databaseContext) : IGuildMemb
         return result.IsFailed ? Result.Fail(result.Errors) : result.Value;
     }
 
+    public async ValueTask<Result<GuildMemberDto>> FindOwnerGuildMemberByGuildId(ulong guildId)
+    {
+        var connectionString = databaseContext.Database.GetConnectionString();
+        if (connectionString is null)
+        {
+            return new ExceptionalError(new DatabaseConnectionNotFoundException(
+                "Can not find Connection string at FindOwnerGuildMemberByGuildId", Environment.StackTrace));
+        }
+
+        var query = new FindOwnerGuildMemberByGuildId
+        {
+            DbConnectionString = connectionString,
+            GuildId = guildId
+        };
+
+        var result = await Result.Try(() => query.Query(),
+            ex => new ExceptionalError("fail to Query FindOwnerGuildMemberByGuildId by exception", ex));
+        
+        return result.IsFailed ? Result.Fail(result.Errors) : result.Value;
+    }
+
     public async ValueTask<Result<bool>> IsOwnerMember(ulong guildMemberId)
     {
         var member = await databaseContext.GuildMembers.FindAsync(guildMemberId);

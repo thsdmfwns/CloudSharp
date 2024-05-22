@@ -136,6 +136,32 @@ public class GuildMemberService : IAsyncDisposable
     [Test]
     [TestCase(null, null)] //success
     [TestCase(ulong.MaxValue, typeof(NotFoundError))] // invalid id
+    public async Task GetOwnerGuildMember(ulong? guildId, Type? errorType)
+    {
+        
+        guildId ??= _rootSeededGuild.GuildId;
+
+        var result = await _guildMemberService.GetOwnerGuildMember(guildId.Value);
+
+        if (errorType is null)
+        {
+            Assert.That(result.IsSuccess);
+            var expect = _rootSeededGuild
+                .SeedToGuildMemberDtos(_seededGuildMembers, _seededGuildMemberRoles, _seededGuildRoles)
+                .First(x => x.GuildMemberId == _seededOwner.GuildMemberId);
+            
+            Assert.That(result.Value, Is.EqualTo(expect).Using(new GuildMemberDtoEqualityCompare()));
+            return;
+        }
+        
+        //fail
+        Assert.That(result.IsFailed, Is.True);
+        Assert.That(result.HasError(x => x.GetType() == errorType), Is.True);
+    }
+    
+    [Test]
+    [TestCase(null, null)] //success
+    [TestCase(ulong.MaxValue, typeof(NotFoundError))] // invalid id
     public async Task BanGuildMember(ulong? guildMemberId, Type? errorType)
     {
         guildMemberId ??= _seededGuildMembers.First().GuildMemberId;

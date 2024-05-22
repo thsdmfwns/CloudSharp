@@ -7,6 +7,7 @@ public interface IGuildMemberService
 {
     ValueTask<Result<ulong>> AddGuildMember(Guid memberId, ulong guildId, string memberName);
     ValueTask<Result<GuildMemberDto>> GetGuildMember(ulong guildMemberId);
+    ValueTask<Result<GuildMemberDto>> GetOwnerGuildMember(ulong guildId);
     ValueTask<Result> BanGuildMember(ulong guildMemberId);
     ValueTask<Result> UpdateGuildMemberName(ulong guildMemberId, string guildMemberName);
     ValueTask<Result> ChangeGuildOwner(ulong ownerGuildMemberId, ulong destinyGuildMemberId);

@@ -47,6 +47,21 @@ public class GuildMemberService(IGuildMemberRepository _guildMemberRepository) :
         return result.Value;
     }
 
+    public async ValueTask<Result<GuildMemberDto>> GetOwnerGuildMember(ulong guildId)
+    {
+        var result = await _guildMemberRepository.FindOwnerGuildMemberByGuildId(guildId);
+        if (result.IsFailed && result.HasError<ExceptionalError>())
+        {
+            return new InternalServerError().CausedBy(result.Errors);
+        }
+        if (result.IsFailed)
+        {
+            return new NotFoundError().CausedBy(result.Errors);
+        }
+
+        return result.Value;
+    }
+
     public async ValueTask<Result> BanGuildMember(ulong guildMemberId)
     {
         var result = await _guildMemberRepository.UpdateGuildMember(guildMemberId, x => x.IsBanned = true);
