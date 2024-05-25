@@ -113,8 +113,7 @@ public class DatabaseContext : DbContext
             .HasOne(e => e.BanIssuer)
             .WithMany(e => e.GuildDoBans)
             .HasForeignKey(e => e.BanIssuerMemberId)
-            .OnDelete(DeleteBehavior.SetNull)
-            .IsRequired();
+            .OnDelete(DeleteBehavior.SetNull);
 
         guildBan
             .HasOne(e => e.BannedMember)

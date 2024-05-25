@@ -1,14 +1,16 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using Microsoft.EntityFrameworkCore;
 
 namespace CloudSharp.Data.Entities;
 
-[PrimaryKey(nameof(GuildMemberBanId))]
+[PrimaryKey(nameof(GuildBanId))]
 public class GuildBan
 {
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public ulong GuildMemberBanId { get; init; }
+    public ulong GuildBanId { get; init; }
     
     public ulong GuildId { get; init; }
 
@@ -28,7 +30,7 @@ public class GuildBan
     [StringLength(256, MinimumLength = 5)]
     public required string Note { get; init; } 
     
-    public required DateTimeOffset BanEnd { get; init; }
+    public required DateTimeOffset BanEnd { get; set; }
 
     public bool IsUnbanned { get; set; } = false;
     

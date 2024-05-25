@@ -46,7 +46,7 @@ namespace CloudSharp.Data.Migrations
 
             modelBuilder.Entity("CloudSharp.Data.Entities.GuildBan", b =>
                 {
-                    b.Property<ulong>("GuildMemberBanId")
+                    b.Property<ulong>("GuildBanId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint unsigned");
 
@@ -54,7 +54,6 @@ namespace CloudSharp.Data.Migrations
                         .HasColumnType("datetime");
 
                     b.Property<Guid?>("BanIssuerMemberId")
-                        .IsRequired()
                         .HasColumnType("char(36)");
 
                     b.Property<Guid>("BannedMemberId")
@@ -74,7 +73,7 @@ namespace CloudSharp.Data.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("varchar(256)");
 
-                    b.HasKey("GuildMemberBanId");
+                    b.HasKey("GuildBanId");
 
                     b.HasIndex("BanIssuerMemberId");
 
@@ -324,8 +323,7 @@ namespace CloudSharp.Data.Migrations
                     b.HasOne("CloudSharp.Data.Entities.Member", "BanIssuer")
                         .WithMany("GuildDoBans")
                         .HasForeignKey("BanIssuerMemberId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("CloudSharp.Data.Entities.Member", "BannedMember")
                         .WithMany("GuildBanned")
