@@ -26,8 +26,6 @@ public class GuildMember
     public Member Member { get; init; } = null!;
 
     public ICollection<GuildMemberRole> GuildMemberRoles { get; } = new List<GuildMemberRole>();
-    public ICollection<GuildMemberBan> GuildMemberBanned { get; } = new List<GuildMemberBan>();
-    public ICollection<GuildMemberBan> GuildMemberBans { get; } = new List<GuildMemberBan>();
     
     public DateTime CreatedOn { get; init; } = DateTime.UtcNow;
     public DateTime? UpdatedOn { get; set; }

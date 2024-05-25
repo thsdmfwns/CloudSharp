@@ -44,6 +44,47 @@ namespace CloudSharp.Data.Migrations
                     b.ToTable("Guilds");
                 });
 
+            modelBuilder.Entity("CloudSharp.Data.Entities.GuildBan", b =>
+                {
+                    b.Property<ulong>("GuildMemberBanId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint unsigned");
+
+                    b.Property<DateTimeOffset>("BanEnd")
+                        .HasColumnType("datetime");
+
+                    b.Property<Guid?>("BanIssuerMemberId")
+                        .IsRequired()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("BannedMemberId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTimeOffset>("CreatedOn")
+                        .HasColumnType("datetime");
+
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("bigint unsigned");
+
+                    b.Property<bool>("IsUnbanned")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
+
+                    b.HasKey("GuildMemberBanId");
+
+                    b.HasIndex("BanIssuerMemberId");
+
+                    b.HasIndex("BannedMemberId");
+
+                    b.HasIndex("GuildId");
+
+                    b.ToTable("GuildBans");
+                });
+
             modelBuilder.Entity("CloudSharp.Data.Entities.GuildChannel", b =>
                 {
                     b.Property<Guid>("GuildChannelId")
@@ -133,38 +174,6 @@ namespace CloudSharp.Data.Migrations
                     b.HasIndex("MemberId");
 
                     b.ToTable("GuildMembers");
-                });
-
-            modelBuilder.Entity("CloudSharp.Data.Entities.GuildMemberBan", b =>
-                {
-                    b.Property<ulong>("GuildMemberBanId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint unsigned");
-
-                    b.Property<DateTimeOffset>("BanEnds")
-                        .HasColumnType("datetime");
-
-                    b.Property<ulong>("BanIssuerGuildMemberId")
-                        .HasColumnType("bigint unsigned");
-
-                    b.Property<DateTimeOffset>("CreatedOn")
-                        .HasColumnType("datetime");
-
-                    b.Property<ulong>("GuildMemberId")
-                        .HasColumnType("bigint unsigned");
-
-                    b.Property<string>("Note")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("varchar(256)");
-
-                    b.HasKey("GuildMemberBanId");
-
-                    b.HasIndex("BanIssuerGuildMemberId");
-
-                    b.HasIndex("GuildMemberId");
-
-                    b.ToTable("GuildMemberBans");
                 });
 
             modelBuilder.Entity("CloudSharp.Data.Entities.GuildMemberRole", b =>
@@ -310,6 +319,33 @@ namespace CloudSharp.Data.Migrations
                     b.ToTable("Shares");
                 });
 
+            modelBuilder.Entity("CloudSharp.Data.Entities.GuildBan", b =>
+                {
+                    b.HasOne("CloudSharp.Data.Entities.Member", "BanIssuer")
+                        .WithMany("GuildDoBans")
+                        .HasForeignKey("BanIssuerMemberId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired();
+
+                    b.HasOne("CloudSharp.Data.Entities.Member", "BannedMember")
+                        .WithMany("GuildBanned")
+                        .HasForeignKey("BannedMemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CloudSharp.Data.Entities.Guild", "Guild")
+                        .WithMany("GuildBans")
+                        .HasForeignKey("GuildId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BanIssuer");
+
+                    b.Navigation("BannedMember");
+
+                    b.Navigation("Guild");
+                });
+
             modelBuilder.Entity("CloudSharp.Data.Entities.GuildChannel", b =>
                 {
                     b.HasOne("CloudSharp.Data.Entities.Guild", "Guild")
@@ -359,25 +395,6 @@ namespace CloudSharp.Data.Migrations
                     b.Navigation("Member");
                 });
 
-            modelBuilder.Entity("CloudSharp.Data.Entities.GuildMemberBan", b =>
-                {
-                    b.HasOne("CloudSharp.Data.Entities.GuildMember", "BanIssuer")
-                        .WithMany("GuildMemberBans")
-                        .HasForeignKey("BanIssuerGuildMemberId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("CloudSharp.Data.Entities.GuildMember", "GuildMember")
-                        .WithMany("GuildMemberBanned")
-                        .HasForeignKey("GuildMemberId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("BanIssuer");
-
-                    b.Navigation("GuildMember");
-                });
-
             modelBuilder.Entity("CloudSharp.Data.Entities.GuildMemberRole", b =>
                 {
                     b.HasOne("CloudSharp.Data.Entities.GuildMember", "GuildMember")
@@ -421,6 +438,8 @@ namespace CloudSharp.Data.Migrations
 
             modelBuilder.Entity("CloudSharp.Data.Entities.Guild", b =>
                 {
+                    b.Navigation("GuildBans");
+
                     b.Navigation("GuildChannels");
 
                     b.Navigation("GuildMembers");
@@ -435,10 +454,6 @@ namespace CloudSharp.Data.Migrations
 
             modelBuilder.Entity("CloudSharp.Data.Entities.GuildMember", b =>
                 {
-                    b.Navigation("GuildMemberBanned");
-
-                    b.Navigation("GuildMemberBans");
-
                     b.Navigation("GuildMemberRoles");
                 });
 
@@ -451,6 +466,10 @@ namespace CloudSharp.Data.Migrations
 
             modelBuilder.Entity("CloudSharp.Data.Entities.Member", b =>
                 {
+                    b.Navigation("GuildBanned");
+
+                    b.Navigation("GuildDoBans");
+
                     b.Navigation("GuildMembers");
 
                     b.Navigation("Shares");

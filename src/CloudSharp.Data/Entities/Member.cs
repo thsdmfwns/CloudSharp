@@ -25,4 +25,6 @@ public class Member
     
     public ICollection<Share> Shares { get; } = new List<Share>();
     public ICollection<GuildMember> GuildMembers { get; } = new List<GuildMember>();
+    public ICollection<GuildBan> GuildBanned { get; } = new List<GuildBan>();
+    public ICollection<GuildBan> GuildDoBans { get; } = new List<GuildBan>();
 };

@@ -16,6 +16,7 @@ public class Guild
     public ICollection<GuildChannel> GuildChannels { get; } = new List<GuildChannel>();
     public ICollection<GuildRole> GuildRoles { get; } = new List<GuildRole>();
     public ICollection<GuildMember> GuildMembers { get; } = new List<GuildMember>();
+    public ICollection<GuildBan> GuildBans { get; } = new List<GuildBan>();
     
     public DateTime CreatedOn { get; init; } = DateTime.UtcNow;
     public DateTime? UpdatedOn { get; set; }
