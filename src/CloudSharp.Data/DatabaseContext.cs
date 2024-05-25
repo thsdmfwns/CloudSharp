@@ -17,6 +17,7 @@ public class DatabaseContext : DbContext
     public DbSet<GuildChannelRole> GuildChannelRoles { get; init; }
     public DbSet<GuildMember> GuildMembers { get; init; }
     public DbSet<GuildMemberRole> GuildMemberRoles { get; init; }
+    public DbSet<GuildMemberBan> GuildMemberBans { get; init; }
     public DbSet<GuildRole> GuildRoles { get; init; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -28,6 +29,7 @@ public class DatabaseContext : DbContext
         var guildChannelRole = modelBuilder.Entity<GuildChannelRole>();
         var guildMember = modelBuilder.Entity<GuildMember>();
         var guildMemberRole = modelBuilder.Entity<GuildMemberRole>();
+        var guildMemberBan = modelBuilder.Entity<GuildMemberBan>();
         var guildRole = modelBuilder.Entity<GuildRole>();
 
         #region share
@@ -97,6 +99,17 @@ public class DatabaseContext : DbContext
             .IsRequired();
 
         #endregion
+
+        #region GuildMemberBan
+
+        guildMemberBan
+            .HasOne(e => e.GuildMember)
+            .WithMany(e => e.GuildMemberBans)
+            .HasForeignKey(e => e.GuildMemberId)
+            .IsRequired();
+
+        #endregion
+        
 
         #region guildRole
 

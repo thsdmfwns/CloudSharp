@@ -135,6 +135,33 @@ namespace CloudSharp.Data.Migrations
                     b.ToTable("GuildMembers");
                 });
 
+            modelBuilder.Entity("CloudSharp.Data.Entities.GuildMemberBan", b =>
+                {
+                    b.Property<ulong>("GuildMemberBanId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint unsigned");
+
+                    b.Property<DateTimeOffset>("BanEnds")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTimeOffset>("CreatedOn")
+                        .HasColumnType("datetime");
+
+                    b.Property<ulong>("GuildMemberId")
+                        .HasColumnType("bigint unsigned");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
+
+                    b.HasKey("GuildMemberBanId");
+
+                    b.HasIndex("GuildMemberId");
+
+                    b.ToTable("GuildMemberBans");
+                });
+
             modelBuilder.Entity("CloudSharp.Data.Entities.GuildMemberRole", b =>
                 {
                     b.Property<ulong>("GuildMemberRoleId")
@@ -327,6 +354,17 @@ namespace CloudSharp.Data.Migrations
                     b.Navigation("Member");
                 });
 
+            modelBuilder.Entity("CloudSharp.Data.Entities.GuildMemberBan", b =>
+                {
+                    b.HasOne("CloudSharp.Data.Entities.GuildMember", "GuildMember")
+                        .WithMany("GuildMemberBans")
+                        .HasForeignKey("GuildMemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GuildMember");
+                });
+
             modelBuilder.Entity("CloudSharp.Data.Entities.GuildMemberRole", b =>
                 {
                     b.HasOne("CloudSharp.Data.Entities.GuildMember", "GuildMember")
@@ -384,6 +422,8 @@ namespace CloudSharp.Data.Migrations
 
             modelBuilder.Entity("CloudSharp.Data.Entities.GuildMember", b =>
                 {
+                    b.Navigation("GuildMemberBans");
+
                     b.Navigation("GuildMemberRoles");
                 });
 
