@@ -10,6 +10,11 @@ public class GuildMemberBan
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public ulong GuildMemberBanId { get; init; }
     
+    public required ulong BanIssuerGuildMemberId { get; init; }
+
+    [ForeignKey(nameof(BanIssuerGuildMemberId))]
+    public GuildMember BanIssuer { get; init; } = null!;
+    
     public required ulong GuildMemberId { get; init; }
     
     [ForeignKey(nameof(GuildMemberId))]

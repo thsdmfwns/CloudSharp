@@ -104,8 +104,14 @@ public class DatabaseContext : DbContext
 
         guildMemberBan
             .HasOne(e => e.GuildMember)
-            .WithMany(e => e.GuildMemberBans)
+            .WithMany(e => e.GuildMemberBanned)
             .HasForeignKey(e => e.GuildMemberId)
+            .IsRequired();
+        
+        guildMemberBan
+            .HasOne(e => e.BanIssuer)
+            .WithMany(e => e.GuildMemberBans)
+            .HasForeignKey(e => e.BanIssuerGuildMemberId)
             .IsRequired();
 
         #endregion

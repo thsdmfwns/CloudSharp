@@ -144,6 +144,9 @@ namespace CloudSharp.Data.Migrations
                     b.Property<DateTimeOffset>("BanEnds")
                         .HasColumnType("datetime");
 
+                    b.Property<ulong>("BanIssuerGuildMemberId")
+                        .HasColumnType("bigint unsigned");
+
                     b.Property<DateTimeOffset>("CreatedOn")
                         .HasColumnType("datetime");
 
@@ -156,6 +159,8 @@ namespace CloudSharp.Data.Migrations
                         .HasColumnType("varchar(256)");
 
                     b.HasKey("GuildMemberBanId");
+
+                    b.HasIndex("BanIssuerGuildMemberId");
 
                     b.HasIndex("GuildMemberId");
 
@@ -356,11 +361,19 @@ namespace CloudSharp.Data.Migrations
 
             modelBuilder.Entity("CloudSharp.Data.Entities.GuildMemberBan", b =>
                 {
-                    b.HasOne("CloudSharp.Data.Entities.GuildMember", "GuildMember")
+                    b.HasOne("CloudSharp.Data.Entities.GuildMember", "BanIssuer")
                         .WithMany("GuildMemberBans")
+                        .HasForeignKey("BanIssuerGuildMemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CloudSharp.Data.Entities.GuildMember", "GuildMember")
+                        .WithMany("GuildMemberBanned")
                         .HasForeignKey("GuildMemberId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("BanIssuer");
 
                     b.Navigation("GuildMember");
                 });
@@ -422,6 +435,8 @@ namespace CloudSharp.Data.Migrations
 
             modelBuilder.Entity("CloudSharp.Data.Entities.GuildMember", b =>
                 {
+                    b.Navigation("GuildMemberBanned");
+
                     b.Navigation("GuildMemberBans");
 
                     b.Navigation("GuildMemberRoles");
