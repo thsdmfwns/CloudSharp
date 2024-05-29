@@ -5,7 +5,7 @@ using MySql.Data.MySqlClient;
 
 namespace CloudSharp.Data.Query;
 
-public class FindOwnerGuildMemberByGuildId : IQuery<GuildMemberDto>
+public class FindGuildOwnerByGuildIdQuery : IQuery<GuildMemberDto>
 {
     
     public required string DbConnectionString { get; init; }

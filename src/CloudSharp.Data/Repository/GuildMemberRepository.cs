@@ -52,7 +52,7 @@ public class GuildMemberRepository(DatabaseContext databaseContext) : IGuildMemb
                 "Can not find Connection string at FindOwnerGuildMemberByGuildId", Environment.StackTrace));
         }
 
-        var query = new FindOwnerGuildMemberByGuildId
+        var query = new FindGuildOwnerByGuildIdQuery
         {
             DbConnectionString = connectionString,
             GuildId = guildId
