@@ -227,4 +227,36 @@ public static class EntityExtensions
     }
     
     #endregion
+
+    #region GuildBan
+
+    public static Faker<GuildBan> SetGuildBanRules(this Faker<GuildBan> faker, ulong guildId, Guid bannedMemberId, IEnumerable<Guid> issuerMemberIds)
+    {
+        faker
+            .RuleFor(p => p.GuildId, guildId)
+            .RuleFor(p => p.BanIssuerMemberId, f => f.PickRandom(issuerMemberIds))
+            .RuleFor(p => p.BannedMemberId, bannedMemberId)
+            .RuleFor(p => p.Note, f => f.Lorem.Sentence())
+            .RuleFor(p => p.BanEnd, f => f.Date.FutureOffset());
+        return faker;
+    }
+
+    public static async ValueTask<List<GuildBan>> SeedGuildBans(
+        this DatabaseContext databaseContext,
+        ulong guildId,
+        IEnumerable<Member> bannedMembers,
+        IEnumerable<Member> issuerMembers)
+    {
+        var issuerMemberIds = issuerMembers.Select(x => x.MemberId).ToList();
+        var bannedMemberIds = bannedMembers.Select(x => x.MemberId).ToList();
+        var generated = bannedMemberIds
+            .Select(id => new Faker<GuildBan>().SetGuildBanRules(guildId, id, issuerMemberIds))
+            .Select(f => f.Generate(1).Single())
+            .ToList();
+        await databaseContext.GuildBans.AddRangeAsync(generated);
+        await databaseContext.SaveChangesAsync();
+        return generated;
+    }
+
+    #endregion
 }

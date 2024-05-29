@@ -1,0 +1,74 @@
+using CloudSharp.Api.Error;
+using CloudSharp.Data.Entities;
+using CloudSharp.Data.Repository;
+using CloudSharp.Share.DTO;
+using FluentResults;
+
+namespace CloudSharp.Api.Service;
+
+public class GuildBanService(IGuildBanRepository _repository) : IGuildBanService
+{
+    public async ValueTask<Result<ulong>> AddGuildBan(ulong guildId, Guid issuerMemberId, Guid bannedMemberId, string note, DateTimeOffset banEnd)
+    {
+        if (banEnd < DateTimeOffset.Now)
+        {
+            return new BadRequestError().CausedBy("banEnd is less than now");
+        }
+
+        var ban = new GuildBan
+        {
+            GuildId = guildId,
+            BanIssuerMemberId = issuerMemberId,
+            BannedMemberId = bannedMemberId,
+            Note = note,
+            BanEnd = banEnd,
+        };
+
+        var insertResult = await _repository.InsertGuildBan(ban);
+        if (insertResult.IsFailed)
+        {
+            return new InternalServerError().CausedBy(insertResult.Errors);
+        }
+        return insertResult.Value;
+    }
+
+    public ValueTask<Result<bool>> Exist(ulong guildId, Guid bannedMemberId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public ValueTask<Result<GuildBanDto>> GetLatest(ulong guildId, Guid bannedMemberId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public ValueTask<Result<List<GuildBanDto>>> GetBansByGuildId(ulong guildId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public ValueTask<Result<List<GuildBanDto>>> GetDoBans(ulong guildId, Guid issuerMemberId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public ValueTask<Result<List<GuildBanDto>>> GetBanned(ulong guildId, Guid bannedMemberId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public ValueTask<Result> UnBan(ulong guildBanId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public ValueTask<Result> UpdateBanEnd(ulong guildBanId, DateTimeOffset banEnd)
+    {
+        throw new NotImplementedException();
+    }
+
+    public ValueTask<Result> DeleteBan(ulong guildBanId)
+    {
+        throw new NotImplementedException();
+    }
+}
