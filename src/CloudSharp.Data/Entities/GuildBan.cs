@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace CloudSharp.Data.Entities;
 
 [PrimaryKey(nameof(GuildBanId))]
+[Index(nameof(BanEnd))]
 public class GuildBan
 {
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

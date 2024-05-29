@@ -237,7 +237,8 @@ public static class EntityExtensions
             .RuleFor(p => p.BanIssuerMemberId, f => f.PickRandom(issuerMemberIds))
             .RuleFor(p => p.BannedMemberId, bannedMemberId)
             .RuleFor(p => p.Note, f => f.Lorem.Sentence())
-            .RuleFor(p => p.BanEnd, f => f.Date.FutureOffset());
+            .RuleFor(p => p.CreatedOn, f => f.Date.PastOffset().RemoveNanoSec())
+            .RuleFor(p => p.BanEnd, f => f.Date.FutureOffset().RemoveNanoSec());
         return faker;
     }
 

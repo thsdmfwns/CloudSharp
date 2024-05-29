@@ -3,9 +3,11 @@ using Bogus;
 using CloudSharp.Api.Error;
 using CloudSharp.Api.Service;
 using CloudSharp.Api.Test.Util;
+using CloudSharp.Api.Util;
 using CloudSharp.Data;
 using CloudSharp.Data.Entities;
 using CloudSharp.Data.Repository;
+using CloudSharp.Share.DTO;
 using Microsoft.EntityFrameworkCore;
 using Respawn;
 
@@ -88,6 +90,65 @@ public class GuildBanService : IAsyncDisposable
         {
             Assert.That(result.IsSuccess);
             Assert.That(_databaseContext.GuildBans.Where(x => x.GuildBanId == result.Value).Any);
+            return;
+        }
+        
+        //fail
+        Assert.That(result.IsFailed);
+        Assert.That(result.HasError(x => x.GetType() == errorType));
+    }
+
+    [Test]
+    [TestCase(null, null, null, true)] //success
+    [TestCase(ulong.MaxValue, null, null, false)] //invalid GuildID
+    [TestCase(null, "", null, false)] //invalid MemberID
+    public async Task Exist(ulong? guildId, string? bannedMemberIdString, Type? errorType, bool expectResult = true)
+    {
+        guildId ??= _rootSeededGuild.GuildId;
+        var bannedMemberId = bannedMemberIdString?.ToGuid() ?? _bannedMembers.First().MemberId;
+        var result = await _service.Exist(guildId.Value, bannedMemberId);
+
+        if (errorType is null)
+        {
+            Assert.That(result.IsSuccess);
+            Assert.That(result.Value, Is.EqualTo(expectResult));
+            return;
+        }
+        
+        //fail
+        Assert.That(result.IsFailed);
+        Assert.That(result.HasError(x => x.GetType() == errorType));
+    }
+
+    
+    [Test]
+    [TestCase(null, null, null)] //success
+    [TestCase(ulong.MaxValue, null, typeof(NotFoundError))] //invalid GuildID
+    [TestCase(null, "", typeof(NotFoundError))] //invalid MemberID
+    public async Task GetLatest(ulong? guildId, string? bannedMemberIdString, Type? errorType)
+    {
+        guildId ??= _rootSeededGuild.GuildId;
+        var bannedMemberId = bannedMemberIdString?.ToGuid() ?? _bannedMembers.First().MemberId;
+        var result = await _service.GetLatest(guildId.Value, bannedMemberId);
+
+        if (errorType is null)
+        {
+            Assert.That(result.IsSuccess);
+            var expectBan = _seededGuildBans
+                .OrderBy(x => x.BanEnd)
+                .First(x => x.GuildId == guildId && x.BannedMemberId == bannedMemberId);
+            var expect = new GuildBanDto
+            {
+                GuildBanId = expectBan.GuildBanId,
+                GuildId = expectBan.GuildId,
+                IssuerMemberId = expectBan.BanIssuerMemberId,
+                BannedMember = _seededMembers.Single(x => x.MemberId == expectBan.BannedMemberId).ToMemberDto(),
+                IsUnbanned = expectBan.IsUnbanned,
+                Note = expectBan.Note,
+                BanEnd = expectBan.BanEnd,
+                CreatedOn = expectBan.CreatedOn
+            };
+            Assert.That(result.Value, Is.EqualTo(expect));
             return;
         }
         

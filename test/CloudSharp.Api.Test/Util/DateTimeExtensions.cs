@@ -14,6 +14,9 @@ public static class DateTimeExtensions
     public static DateTime RemoveNanoSec(this DateTime dateTime)
         => dateTime.AddTicks(-(dateTime.Ticks % TimeSpan.TicksPerMicrosecond));
 
+    public static DateTimeOffset RemoveNanoSec(this DateTimeOffset dateTime)
+        => dateTime.AddTicks(-(dateTime.Ticks % TimeSpan.TicksPerMicrosecond));
+
     public static DateTime DateTimeCaseToDateTime(this DateTimeCase dateTimeCase)
     {
         return dateTimeCase switch

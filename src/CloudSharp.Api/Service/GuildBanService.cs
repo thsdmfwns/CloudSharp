@@ -32,14 +32,30 @@ public class GuildBanService(IGuildBanRepository _repository) : IGuildBanService
         return insertResult.Value;
     }
 
-    public ValueTask<Result<bool>> Exist(ulong guildId, Guid bannedMemberId)
+    public async ValueTask<Result<bool>> Exist(ulong guildId, Guid bannedMemberId)
     {
-        throw new NotImplementedException();
+        var result = await _repository.Exist(guildId, bannedMemberId);
+        if (result.IsFailed && result.HasError<ExceptionalError>())
+        {
+            return new InternalServerError().CausedBy(result.Errors);
+        }
+
+        return result.Value;
     }
 
-    public ValueTask<Result<GuildBanDto>> GetLatest(ulong guildId, Guid bannedMemberId)
+    public async ValueTask<Result<GuildBanDto>> GetLatest(ulong guildId, Guid bannedMemberId)
     {
-        throw new NotImplementedException();
+        var result = await _repository.FindLatest(guildId, bannedMemberId);
+        if (result.IsFailed && result.HasError<ExceptionalError>())
+        {
+            return new InternalServerError().CausedBy(result.Errors);
+        }
+        if (result.IsFailed)
+        {
+            return new NotFoundError().CausedBy(result.Errors);
+        }
+
+        return result.Value;
     }
 
     public ValueTask<Result<List<GuildBanDto>>> GetBansByGuildId(ulong guildId)
