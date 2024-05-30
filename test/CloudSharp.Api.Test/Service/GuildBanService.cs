@@ -194,7 +194,7 @@ public class GuildBanService : IAsyncDisposable
     {
         var issuedMemberId = issuerMemberIdString?.ToGuid() ?? _notBannedMembers.First().MemberId;
         guildId ??= _rootSeededGuild.GuildId;
-        var result = await _service.GetIssuedBans(guildId.Value, issuedMemberId);
+        var result = await _service.GetBansByIssuedMemberId(guildId.Value, issuedMemberId);
 
         if (errorType is null)
         {

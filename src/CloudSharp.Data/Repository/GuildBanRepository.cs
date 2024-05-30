@@ -84,7 +84,7 @@ public class GuildBanRepository(DatabaseContext databaseContext) : IGuildBanRepo
         return findResult.Value;
     }
 
-    public async ValueTask<Result<List<GuildBan>>> FIndIssuedBans(ulong guildId, Guid issuedMemberId)
+    public async ValueTask<Result<List<GuildBan>>> FIndBansByIssuedMemberId(ulong guildId, Guid issuedMemberId)
     {
         var findResult = await Result.Try(() =>
             databaseContext.GuildBans
