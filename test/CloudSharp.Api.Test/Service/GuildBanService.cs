@@ -190,7 +190,7 @@ public class GuildBanService : IAsyncDisposable
     [TestCase(null, null, null)] //success
     [TestCase(ulong.MaxValue, null, null)] //invalid id
     [TestCase(null, "", null)] //invalid id
-    public async Task GetIssuedBans(ulong? guildId, string? issuerMemberIdString, Type? errorType)
+    public async Task FIndBansByIssuedMemberId(ulong? guildId, string? issuerMemberIdString, Type? errorType)
     {
         var issuedMemberId = issuerMemberIdString?.ToGuid() ?? _notBannedMembers.First().MemberId;
         guildId ??= _rootSeededGuild.GuildId;
