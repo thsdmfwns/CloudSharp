@@ -72,7 +72,7 @@ public class GuildBanService(IGuildBanRepository _repository) : IGuildBanService
 
     public async ValueTask<Result<List<GuildBanDto>>> GetBansByIssuedMemberId(ulong guildId, Guid issuerMemberId)
     {
-        var result = await _repository.FIndBansByIssuedMemberId(guildId, issuerMemberId);
+        var result = await _repository.FindBansByIssuedMemberId(guildId, issuerMemberId);
         if (result.IsFailed)
         {
             return new InternalServerError().CausedBy(result.Errors);
@@ -81,9 +81,15 @@ public class GuildBanService(IGuildBanRepository _repository) : IGuildBanService
         return result.Value.Select(x => x.ToGuildBanDto()).ToList();
     }
 
-    public ValueTask<Result<List<GuildBanDto>>> GetBansByBannedMemberId(ulong guildId, Guid bannedMemberId)
+    public async ValueTask<Result<List<GuildBanDto>>> GetBansByBannedMemberId(ulong guildId, Guid bannedMemberId)
     {
-        throw new NotImplementedException();
+        var result = await _repository.FindBansByBannedMemberId(guildId, bannedMemberId);
+        if (result.IsFailed)
+        {
+            return new InternalServerError().CausedBy(result.Errors);
+        }
+        
+        return result.Value.Select(x => x.ToGuildBanDto()).ToList();
     }
 
     public ValueTask<Result> UnBan(ulong guildBanId)

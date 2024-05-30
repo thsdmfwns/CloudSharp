@@ -213,6 +213,34 @@ public class GuildBanService : IAsyncDisposable
         Assert.That(result.IsFailed);
         Assert.That(result.HasError(x => x.GetType() == errorType));
     }
+        
+    [Test]
+    [TestCase(null, null, null)] //success
+    [TestCase(ulong.MaxValue, null, null)] //invalid id
+    [TestCase(null, "", null)] //invalid id
+    public async Task GetBansByBannedMemberId(ulong? guildId, string? bannedMemberIdString, Type? errorType)
+    {
+        var bannedMemberId = bannedMemberIdString?.ToGuid() ?? _bannedMembers.First().MemberId;
+        guildId ??= _rootSeededGuild.GuildId;
+        var result = await _service.GetBansByBannedMemberId(guildId.Value, bannedMemberId);
+
+        if (errorType is null)
+        {
+            Assert.That(result.IsSuccess);
+            var expect = _seededGuildBans
+                .Where(x => x.GuildId == guildId.Value && x.BannedMemberId == bannedMemberId)
+                .OrderBy(x => x.BannedMemberId)
+                .Select(x => x.SeedToGuildBanDto(
+                    _seededMembers.Single(y => y.MemberId == x.BannedMemberId)))
+                .ToList();
+            Assert.That(result.Value, Is.EqualTo(expect));
+            return;
+        }
+        
+        //fail
+        Assert.That(result.IsFailed);
+        Assert.That(result.HasError(x => x.GetType() == errorType));
+    }
     
     
 }
