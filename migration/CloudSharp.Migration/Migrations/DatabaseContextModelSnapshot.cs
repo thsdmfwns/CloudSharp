@@ -50,8 +50,8 @@ namespace CloudSharp.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint unsigned");
 
-                    b.Property<DateTimeOffset>("BanEnd")
-                        .HasColumnType("datetime");
+                    b.Property<long>("BanEndUnixSeconds")
+                        .HasColumnType("bigint");
 
                     b.Property<Guid?>("BanIssuerMemberId")
                         .HasColumnType("char(36)");
@@ -74,6 +74,8 @@ namespace CloudSharp.Data.Migrations
                         .HasColumnType("varchar(256)");
 
                     b.HasKey("GuildBanId");
+
+                    b.HasIndex("BanEndUnixSeconds");
 
                     b.HasIndex("BanIssuerMemberId");
 

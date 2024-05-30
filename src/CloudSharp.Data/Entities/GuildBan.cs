@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace CloudSharp.Data.Entities;
 
 [PrimaryKey(nameof(GuildBanId))]
-[Index(nameof(BanEnd))]
+[Index(nameof(BanEndUnixSeconds))]
 public class GuildBan
 {
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -31,7 +31,7 @@ public class GuildBan
     [StringLength(256, MinimumLength = 5)]
     public required string Note { get; init; } 
     
-    public required DateTimeOffset BanEnd { get; set; }
+    public required long BanEndUnixSeconds { get; set; }
 
     public bool IsUnbanned { get; set; } = false;
     
