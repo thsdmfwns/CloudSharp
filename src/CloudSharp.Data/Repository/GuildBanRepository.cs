@@ -51,7 +51,8 @@ public class GuildBanRepository(DatabaseContext databaseContext) : IGuildBanRepo
                             && x.IsUnbanned == false)
                 .Include(x => x.BannedMember)
                 .OrderBy(x => x.BanEndUnixSeconds)
-                .FirstOrDefaultAsync());
+                .FirstOrDefaultAsync(),
+            ex => new ExceptionalError("fail to FindLatestExisted by exception", ex));
         if (findResult.IsFailed)
         {
             return Result.Fail(findResult.Errors);
@@ -72,7 +73,27 @@ public class GuildBanRepository(DatabaseContext databaseContext) : IGuildBanRepo
                 .Where(x => x.GuildId == guildId)
                 .Include(x => x.BannedMember)
                 .OrderBy(x => x.BannedMemberId)
-                .ToListAsync());
+                .ToListAsync(),
+            ex => new ExceptionalError("fail to FindBansByGuildId by exception", ex));
+
+        if (findResult.IsFailed)
+        {
+            return Result.Fail(findResult.Errors);
+        }
+
+        return findResult.Value;
+    }
+
+    public async ValueTask<Result<List<GuildBan>>> FIndIssuedBans(ulong guildId, Guid issuedMemberId)
+    {
+        var findResult = await Result.Try(() =>
+            databaseContext.GuildBans
+                .Where(x => x.GuildId == guildId && x.BanIssuerMemberId == issuedMemberId)
+                .Include(x => x.BannedMember)
+                .OrderBy(x => x.BannedMemberId)
+                .ToListAsync(),
+            ex => new ExceptionalError("fail to FIndIssuedBans by exception", ex));
+
         if (findResult.IsFailed)
         {
             return Result.Fail(findResult.Errors);

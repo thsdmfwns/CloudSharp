@@ -313,6 +313,28 @@ public static class EntityExtensions
 
     #region GuildBan
 
+    public static GuildBanDto SeedToGuildBanDto(this GuildBan guildBan, Member seededBannedMember)
+    {
+        return new GuildBanDto
+        {
+            GuildBanId = guildBan.GuildBanId,
+            GuildId = guildBan.GuildId,
+            IssuerMemberId = guildBan.BanIssuerMemberId,
+            BannedMember = new MemberDto
+            {
+                MemberId = seededBannedMember.MemberId,
+                LoginId = seededBannedMember.LoginId,
+                Email = seededBannedMember.Email,
+                Nickname = seededBannedMember.Nickname,
+                ProfileImageId = seededBannedMember.ProfileImageId.ToString()
+            },
+            IsUnbanned = guildBan.IsUnbanned,
+            Note = guildBan.Note,
+            BanEnd = DateTimeOffset.FromUnixTimeSeconds(guildBan.BanEndUnixSeconds),
+            CreatedOn = guildBan.CreatedOn
+        };
+    }
+
     public static Faker<GuildBan> SetGuildBanRules(this Faker<GuildBan> faker, ulong guildId, Guid bannedMemberId, IEnumerable<Guid> issuerMemberIds)
     {
         faker

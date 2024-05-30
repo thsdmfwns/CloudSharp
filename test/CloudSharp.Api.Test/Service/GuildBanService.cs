@@ -173,24 +173,37 @@ public class GuildBanService : IAsyncDisposable
             var expect = _seededGuildBans
                 .Where(x => x.GuildId == guildId.Value)
                 .OrderBy(x => x.BannedMemberId)
-                .Select(x => new GuildBanDto
-                {
-                    GuildBanId = x.GuildBanId,
-                    GuildId = x.GuildId,
-                    IssuerMemberId = x.BanIssuerMemberId,
-                    BannedMember = new MemberDto
-                    {
-                        MemberId = x.BannedMember.MemberId,
-                        LoginId = x.BannedMember.LoginId,
-                        Email = x.BannedMember.Email,
-                        Nickname = x.BannedMember.Nickname,
-                        ProfileImageId = x.BannedMember.ProfileImageId.ToString()
-                    },
-                    IsUnbanned = x.IsUnbanned,
-                    Note = x.Note,
-                    BanEnd = DateTimeOffset.FromUnixTimeSeconds(x.BanEndUnixSeconds),
-                    CreatedOn = x.CreatedOn
-                })
+                .Select(x => x.SeedToGuildBanDto(
+                    _seededMembers.Single(y => y.MemberId == x.BannedMemberId)))
+                .ToList();
+            Assert.That(result.Value, Is.EqualTo(expect));
+            return;
+        }
+        
+        //fail
+        Assert.That(result.IsFailed);
+        Assert.That(result.HasError(x => x.GetType() == errorType));
+    }
+
+    
+    [Test]
+    [TestCase(null, null, null)] //success
+    [TestCase(ulong.MaxValue, null, null)] //invalid id
+    [TestCase(null, "", null)] //invalid id
+    public async Task GetIssuedBans(ulong? guildId, string? issuerMemberIdString, Type? errorType)
+    {
+        var issuedMemberId = issuerMemberIdString?.ToGuid() ?? _notBannedMembers.First().MemberId;
+        guildId ??= _rootSeededGuild.GuildId;
+        var result = await _service.GetIssuedBans(guildId.Value, issuedMemberId);
+
+        if (errorType is null)
+        {
+            Assert.That(result.IsSuccess);
+            var expect = _seededGuildBans
+                .Where(x => x.GuildId == guildId.Value && x.BanIssuerMemberId == issuedMemberId)
+                .OrderBy(x => x.BannedMemberId)
+                .Select(x => x.SeedToGuildBanDto(
+                    _seededMembers.Single(y => y.MemberId == x.BannedMemberId)))
                 .ToList();
             Assert.That(result.Value, Is.EqualTo(expect));
             return;
