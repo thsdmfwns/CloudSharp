@@ -21,7 +21,7 @@ public class GuildBanService(IGuildBanRepository _repository) : IGuildBanService
             BanIssuerMemberId = issuerMemberId,
             BannedMemberId = bannedMemberId,
             Note = note,
-            BanEnd = banEnd,
+            BanEndUnixSeconds = banEnd.ToUnixTimeSeconds(),
         };
 
         var insertResult = await _repository.InsertGuildBan(ban);
@@ -43,9 +43,9 @@ public class GuildBanService(IGuildBanRepository _repository) : IGuildBanService
         return result.Value;
     }
 
-    public async ValueTask<Result<GuildBanDto>> GetLatest(ulong guildId, Guid bannedMemberId)
+    public async ValueTask<Result<GuildBanDto>> GetLatestExisted(ulong guildId, Guid bannedMemberId)
     {
-        var result = await _repository.FindLatest(guildId, bannedMemberId);
+        var result = await _repository.FindLatestExisted(guildId, bannedMemberId);
         if (result.IsFailed && result.HasError<ExceptionalError>())
         {
             return new InternalServerError().CausedBy(result.Errors);

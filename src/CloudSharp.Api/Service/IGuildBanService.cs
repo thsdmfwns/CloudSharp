@@ -10,7 +10,7 @@ public interface IGuildBanService
         DateTimeOffset banend);
 
     ValueTask<Result<bool>> Exist(ulong guildId, Guid bannedMemberId);
-    ValueTask<Result<GuildBanDto>> GetLatest(ulong guildId, Guid bannedMemberId);
+    ValueTask<Result<GuildBanDto>> GetLatestExisted(ulong guildId, Guid bannedMemberId);
 
     ValueTask<Result<List<GuildBanDto>>> GetBansByGuildId(ulong guildId);
     ValueTask<Result<List<GuildBanDto>>> GetDoBans(ulong guildId, Guid issuerMemberId);

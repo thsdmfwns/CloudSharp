@@ -24,11 +24,13 @@ public class GuildBanRepository(DatabaseContext databaseContext) : IGuildBanRepo
 
     public async ValueTask<Result<bool>> Exist(ulong guildId, Guid memberId)
     {
+        var now = DateTimeOffset.Now.ToUnixTimeSeconds();
         var findResult = await Result.Try(() => 
                 databaseContext.GuildBans
                 .AnyAsync(x => x.GuildId == guildId
                                && x.BannedMemberId == memberId
-                               && x.BanEnd > DateTimeOffset.Now),
+                               && x.BanEndUnixSeconds > now
+                               && x.IsUnbanned == false),
             ex => new ExceptionalError("fail to find existed ban by exception", ex));
         if (findResult.IsFailed)
         {
@@ -38,24 +40,45 @@ public class GuildBanRepository(DatabaseContext databaseContext) : IGuildBanRepo
         return findResult.Value;
     }
 
-    public async ValueTask<Result<GuildBanDto>> FindLatest(ulong guildId, Guid memberId)
+    public async ValueTask<Result<GuildBanDto>> FindLatestExisted(ulong guildId, Guid memberId)
     {
-        var connectionString = databaseContext.Database.GetConnectionString();
-        if (connectionString is null)
+        var now = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var findResult = await Result.Try(() =>
+            databaseContext.GuildBans
+                .Where(x => x.GuildId == guildId
+                            && x.BannedMemberId == memberId
+                            && x.BanEndUnixSeconds > now
+                            && x.IsUnbanned == false)
+                .Include(x => x.BannedMember)
+                .OrderBy(x => x.BanEndUnixSeconds)
+                .FirstOrDefaultAsync());
+        if (findResult.IsFailed)
         {
-            return new ExceptionalError(new DatabaseConnectionNotFoundException(
-                "Can not find Connection string at FindGuildMemberByGuildMemberId", Environment.StackTrace));
+            return Result.Fail(findResult.Errors);
         }
 
-        var query = new FindLatestGuildBanByIds
+        if (findResult.ValueOrDefault is null)
         {
-            GuildId = guildId,
-            BannedMemberId = memberId,
-            DbConnectionString =connectionString 
+            return Result.Fail("LatestBan Not found");
+        }
+
+        return new GuildBanDto
+        {
+            GuildBanId = findResult.Value!.GuildBanId,
+            GuildId = findResult.Value.GuildId,
+            IssuerMemberId = findResult.Value.BanIssuerMemberId,
+            BannedMember = new MemberDto
+            {
+                MemberId = findResult.Value.BannedMember.MemberId,
+                LoginId = findResult.Value.BannedMember.LoginId,
+                Email = findResult.Value.BannedMember.Email,
+                Nickname = findResult.Value.BannedMember.Nickname,
+                ProfileImageId = findResult.Value.BannedMember.ProfileImageId.ToString()
+            },
+            IsUnbanned = findResult.Value.IsUnbanned,
+            Note = findResult.Value.Note,
+            BanEnd = DateTimeOffset.FromUnixTimeSeconds(findResult.Value.BanEndUnixSeconds),
+            CreatedOn = findResult.Value.CreatedOn
         };
-        var result = await Result.Try(() => query.Query(),
-            ex => new ExceptionalError("fail to find latest guild ban by Exception", ex));
-            
-        return result.IsFailed ? Result.Fail(result.Errors) : result.Value;
     }
 }

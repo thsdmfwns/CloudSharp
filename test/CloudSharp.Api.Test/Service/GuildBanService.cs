@@ -129,13 +129,13 @@ public class GuildBanService : IAsyncDisposable
     {
         guildId ??= _rootSeededGuild.GuildId;
         var bannedMemberId = bannedMemberIdString?.ToGuid() ?? _bannedMembers.First().MemberId;
-        var result = await _service.GetLatest(guildId.Value, bannedMemberId);
+        var result = await _service.GetLatestExisted(guildId.Value, bannedMemberId);
 
         if (errorType is null)
         {
             Assert.That(result.IsSuccess);
             var expectBan = _seededGuildBans
-                .OrderBy(x => x.BanEnd)
+                .OrderBy(x => x.BanEndUnixSeconds)
                 .First(x => x.GuildId == guildId && x.BannedMemberId == bannedMemberId);
             var expect = new GuildBanDto
             {
@@ -145,9 +145,10 @@ public class GuildBanService : IAsyncDisposable
                 BannedMember = _seededMembers.Single(x => x.MemberId == expectBan.BannedMemberId).ToMemberDto(),
                 IsUnbanned = expectBan.IsUnbanned,
                 Note = expectBan.Note,
-                BanEnd = expectBan.BanEnd,
-                CreatedOn = expectBan.CreatedOn
+                BanEnd = DateTimeOffset.FromUnixTimeSeconds(expectBan.BanEndUnixSeconds),
+                CreatedOn = expectBan.CreatedOn.ToLocalTime()
             };
+            
             Assert.That(result.Value, Is.EqualTo(expect));
             return;
         }
