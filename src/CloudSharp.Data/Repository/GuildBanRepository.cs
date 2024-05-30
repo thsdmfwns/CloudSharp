@@ -40,7 +40,7 @@ public class GuildBanRepository(DatabaseContext databaseContext) : IGuildBanRepo
         return findResult.Value;
     }
 
-    public async ValueTask<Result<GuildBanDto>> FindLatestExisted(ulong guildId, Guid memberId)
+    public async ValueTask<Result<GuildBan>> FindLatestExisted(ulong guildId, Guid memberId)
     {
         var now = DateTimeOffset.Now.ToUnixTimeSeconds();
         var findResult = await Result.Try(() =>
@@ -62,23 +62,22 @@ public class GuildBanRepository(DatabaseContext databaseContext) : IGuildBanRepo
             return Result.Fail("LatestBan Not found");
         }
 
-        return new GuildBanDto
+        return findResult.Value!;
+    }
+
+    public async ValueTask<Result<List<GuildBan>>> FindBansByGuildId(ulong guildId)
+    {
+        var findResult = await Result.Try(() =>
+            databaseContext.GuildBans
+                .Where(x => x.GuildId == guildId)
+                .Include(x => x.BannedMember)
+                .OrderBy(x => x.BannedMemberId)
+                .ToListAsync());
+        if (findResult.IsFailed)
         {
-            GuildBanId = findResult.Value!.GuildBanId,
-            GuildId = findResult.Value.GuildId,
-            IssuerMemberId = findResult.Value.BanIssuerMemberId,
-            BannedMember = new MemberDto
-            {
-                MemberId = findResult.Value.BannedMember.MemberId,
-                LoginId = findResult.Value.BannedMember.LoginId,
-                Email = findResult.Value.BannedMember.Email,
-                Nickname = findResult.Value.BannedMember.Nickname,
-                ProfileImageId = findResult.Value.BannedMember.ProfileImageId.ToString()
-            },
-            IsUnbanned = findResult.Value.IsUnbanned,
-            Note = findResult.Value.Note,
-            BanEnd = DateTimeOffset.FromUnixTimeSeconds(findResult.Value.BanEndUnixSeconds),
-            CreatedOn = findResult.Value.CreatedOn
-        };
+            return Result.Fail(findResult.Errors);
+        }
+
+        return findResult.Value;
     }
 }

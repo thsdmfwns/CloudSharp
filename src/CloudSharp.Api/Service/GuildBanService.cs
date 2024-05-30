@@ -1,4 +1,5 @@
 using CloudSharp.Api.Error;
+using CloudSharp.Api.Util;
 using CloudSharp.Data.Entities;
 using CloudSharp.Data.Repository;
 using CloudSharp.Share.DTO;
@@ -55,15 +56,25 @@ public class GuildBanService(IGuildBanRepository _repository) : IGuildBanService
             return new NotFoundError().CausedBy(result.Errors);
         }
 
-        return result.Value;
+        return result.Value.ToGuildBanDto();
     }
 
-    public ValueTask<Result<List<GuildBanDto>>> GetBansByGuildId(ulong guildId)
+    public async ValueTask<Result<List<GuildBanDto>>> GetBansByGuildId(ulong guildId)
     {
-        throw new NotImplementedException();
+        var result = await _repository.FindBansByGuildId(guildId);
+        if (result.IsFailed && result.HasError<ExceptionalError>())
+        {
+            return new InternalServerError().CausedBy(result.Errors);
+        }
+        if (result.IsFailed)
+        {
+            return new NotFoundError().CausedBy(result.Errors);
+        }
+
+        return result.Value.Select(x => x.ToGuildBanDto()).ToList();
     }
 
-    public ValueTask<Result<List<GuildBanDto>>> GetDoBans(ulong guildId, Guid issuerMemberId)
+    public ValueTask<Result<List<GuildBanDto>>> GetIssuedBans(ulong guildId, Guid issuerMemberId)
     {
         throw new NotImplementedException();
     }

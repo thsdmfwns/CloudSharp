@@ -9,5 +9,6 @@ public interface IGuildBanRepository
     ValueTask<Result<ulong>> InsertGuildBan(GuildBan guildBan);
 
     ValueTask<Result<bool>> Exist(ulong guildId, Guid memberId);
-    ValueTask<Result<GuildBanDto>> FindLatestExisted(ulong guildId, Guid memberId);
+    ValueTask<Result<GuildBan>> FindLatestExisted(ulong guildId, Guid memberId);
+    ValueTask<Result<List<GuildBan>>> FindBansByGuildId(ulong guildId);
 }

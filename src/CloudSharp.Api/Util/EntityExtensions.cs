@@ -28,4 +28,26 @@ public static class EntityExtensions
             FileName = Path.GetFileName(share.FilePath)
         };
     }
+
+    public static GuildBanDto ToGuildBanDto(this GuildBan guildBan)
+    {
+        return new GuildBanDto
+        {
+            GuildBanId = guildBan.GuildBanId,
+            GuildId = guildBan.GuildId,
+            IssuerMemberId = guildBan.BanIssuerMemberId,
+            BannedMember = new MemberDto
+            {
+                MemberId = guildBan.BannedMember.MemberId,
+                LoginId = guildBan.BannedMember.LoginId,
+                Email = guildBan.BannedMember.Email,
+                Nickname = guildBan.BannedMember.Nickname,
+                ProfileImageId = guildBan.BannedMember.ProfileImageId.ToString()
+            },
+            IsUnbanned = guildBan.IsUnbanned,
+            Note = guildBan.Note,
+            BanEnd = DateTimeOffset.FromUnixTimeSeconds(guildBan.BanEndUnixSeconds),
+            CreatedOn = guildBan.CreatedOn
+        };
+    }
 }
