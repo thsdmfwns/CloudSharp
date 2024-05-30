@@ -132,4 +132,12 @@ public class GuildBanRepository(DatabaseContext databaseContext) : IGuildBanRepo
         return Result.OkIf(saveResult.IsSuccess, 
             new Error("fail to UpdateGuildBan during save").CausedBy(saveResult.Errors));
     }
+
+    public async ValueTask<Result> DeleteGuildBan(ulong guildBanId)
+    {
+        var result = await Result.Try(() =>
+                databaseContext.GuildBans.Where(x => x.GuildBanId == guildBanId).ExecuteDeleteAsync(),
+            ex => new ExceptionalError("fail to DeleteGuildBan by Exception", ex));
+        return result.IsFailed ? Result.Fail(result.Errors) : Result.Ok();
+    }
 }

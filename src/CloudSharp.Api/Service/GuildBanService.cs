@@ -118,8 +118,9 @@ public class GuildBanService(IGuildBanRepository _repository) : IGuildBanService
         return Result.OkIf(result.IsSuccess, new NotFoundError().CausedBy(result.Errors));
     }
 
-    public ValueTask<Result> DeleteBan(ulong guildBanId)
+    public async ValueTask<Result> DeleteBan(ulong guildBanId)
     {
-        throw new NotImplementedException();
+        var result = await _repository.DeleteGuildBan(guildBanId);
+        return Result.OkIf(result.IsSuccess, new InternalServerError().CausedBy(result.Errors));
     }
 }

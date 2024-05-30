@@ -288,6 +288,28 @@ public class GuildBanService : IAsyncDisposable
         Assert.That(result.IsFailed);
         Assert.That(result.HasError(x => x.GetType() == errorType));
     }
+
+    
+    [Test]
+    [TestCase(null, null)] //success
+    public async Task DeleteBan(ulong? guildBanId, Type? errorType)
+    {
+        guildBanId ??= _seededGuildBans.First().GuildBanId;
+
+        var result = await _service.DeleteBan(guildBanId.Value);
+
+        if (errorType is null)
+        {
+            Assert.That(result.IsSuccess);
+            var actual = await _databaseContext.GuildBans.SingleOrDefaultAsync(x => x.GuildBanId == guildBanId.Value);
+            Assert.That(actual, Is.Null);
+            return;
+        }
+        
+        //fail
+        Assert.That(result.IsFailed);
+        Assert.That(result.HasError(x => x.GetType() == errorType));
+    }
     
     
 }
