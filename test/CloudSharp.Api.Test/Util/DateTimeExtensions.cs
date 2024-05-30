@@ -17,13 +17,24 @@ public static class DateTimeExtensions
     public static DateTimeOffset RemoveNanoSec(this DateTimeOffset dateTime)
         => dateTime.AddTicks(-(dateTime.Ticks % TimeSpan.TicksPerMicrosecond));
 
-    public static DateTime DateTimeCaseToDateTime(this DateTimeCase dateTimeCase)
+    public static DateTime ToDateTime(this DateTimeCase dateTimeCase)
     {
         return dateTimeCase switch
         {
             DateTimeCase.Now => DateTime.Now,
             DateTimeCase.Future => new Faker().Date.Future(),
             DateTimeCase.Past => new Faker().Date.Past(),
+            _ => DateTime.Now
+        };
+    }
+    
+    public static DateTimeOffset ToDateTimeOffset(this DateTimeCase dateTimeCase)
+    {
+        return dateTimeCase switch
+        {
+            DateTimeCase.Now => DateTimeOffset.Now,
+            DateTimeCase.Future => new Faker().Date.FutureOffset(),
+            DateTimeCase.Past => new Faker().Date.PastOffset(),
             _ => DateTime.Now
         };
     }

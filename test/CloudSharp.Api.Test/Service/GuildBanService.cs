@@ -82,7 +82,7 @@ public class GuildBanService : IAsyncDisposable
         var issuerMemberId = issuerMemberIdString?.ToGuid() ?? _notBannedMembers.First().MemberId;
         var bannedMemberId = bannedMemberIdString?.ToGuid() ?? _notBannedMembers.ElementAt(1).MemberId;
         note ??= _faker.Lorem.Sentences();
-        var banEnd = banEndCase?.DateTimeCaseToDateTime() ?? _faker.Date.FutureOffset();
+        var banEnd = banEndCase?.ToDateTime() ?? _faker.Date.FutureOffset();
 
         var result = await _service.AddGuildBan(guildId.Value, issuerMemberId, bannedMemberId, note, banEnd);
 
@@ -234,6 +234,53 @@ public class GuildBanService : IAsyncDisposable
                     _seededMembers.Single(y => y.MemberId == x.BannedMemberId)))
                 .ToList();
             Assert.That(result.Value, Is.EqualTo(expect));
+            return;
+        }
+        
+        //fail
+        Assert.That(result.IsFailed);
+        Assert.That(result.HasError(x => x.GetType() == errorType));
+    }
+
+    [Test]
+    [TestCase(null, null)] //success
+    [TestCase(ulong.MaxValue, typeof(NotFoundError))] //invalid Id
+    public async Task UnBan(ulong? guildBanId, Type? errorType)
+    {
+        guildBanId ??= _seededGuildBans.First().GuildBanId;
+
+        var result = await _service.UnBan(guildBanId.Value);
+
+        if (errorType is null)
+        {
+            Assert.That(result.IsSuccess);
+            var actual = await _databaseContext.GuildBans.SingleAsync(x => x.GuildBanId == guildBanId.Value);
+            Assert.That(actual.IsUnbanned, Is.True);
+            return;
+        }
+        
+        //fail
+        Assert.That(result.IsFailed);
+        Assert.That(result.HasError(x => x.GetType() == errorType));
+    }
+
+    [Test]
+    [TestCase(null, null, null)] //success
+    [TestCase(ulong.MaxValue, null, typeof(NotFoundError))] //invalid Id
+    [TestCase(null, DateTimeCase.Past, typeof(BadRequestError))] //invalid DateTime
+    public async Task UpdateBanEnd(ulong? guildBanId, DateTimeCase? banEndCase, Type? errorType)
+    {
+        guildBanId ??= _seededGuildBans.First().GuildBanId;
+        banEndCase ??= DateTimeCase.Future;
+
+        var banEnd = banEndCase.Value.ToDateTimeOffset();
+        var result = await _service.UpdateBanEnd(guildBanId.Value, banEnd);
+        
+        if (errorType is null)
+        {
+            Assert.That(result.IsSuccess);
+            var actual = await _databaseContext.GuildBans.SingleAsync(x => x.GuildBanId == guildBanId.Value);
+            Assert.That(actual.BanEndUnixSeconds, Is.EqualTo(banEnd.ToUnixTimeSeconds()));
             return;
         }
         

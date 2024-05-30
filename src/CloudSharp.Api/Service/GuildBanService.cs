@@ -92,14 +92,30 @@ public class GuildBanService(IGuildBanRepository _repository) : IGuildBanService
         return result.Value.Select(x => x.ToGuildBanDto()).ToList();
     }
 
-    public ValueTask<Result> UnBan(ulong guildBanId)
+    public async ValueTask<Result> UnBan(ulong guildBanId)
     {
-        throw new NotImplementedException();
+        var result = await _repository.UpdateGuildBan(guildBanId, x => x.IsUnbanned = true);
+        if (result.IsFailed && result.HasError<ExceptionalError>())
+        {
+            return new InternalServerError().CausedBy(result.Errors);
+        }
+
+        return Result.OkIf(result.IsSuccess, new NotFoundError().CausedBy(result.Errors));
     }
 
-    public ValueTask<Result> UpdateBanEnd(ulong guildBanId, DateTimeOffset banEnd)
+    public async ValueTask<Result> UpdateBanEnd(ulong guildBanId, DateTimeOffset banEnd)
     {
-        throw new NotImplementedException();
+        if (banEnd <= DateTimeOffset.Now)
+        {
+            return new BadRequestError().CausedBy("banEnd is Past");
+        }   
+        var result = await _repository.UpdateGuildBan(guildBanId, x => x.BanEndUnixSeconds = banEnd.ToUnixTimeSeconds());
+        if (result.IsFailed && result.HasError<ExceptionalError>())
+        {
+            return new InternalServerError().CausedBy(result.Errors);
+        }
+
+        return Result.OkIf(result.IsSuccess, new NotFoundError().CausedBy(result.Errors));
     }
 
     public ValueTask<Result> DeleteBan(ulong guildBanId)

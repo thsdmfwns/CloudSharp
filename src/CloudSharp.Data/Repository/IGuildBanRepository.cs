@@ -13,4 +13,6 @@ public interface IGuildBanRepository
     ValueTask<Result<List<GuildBan>>> FindBansByGuildId(ulong guildId);
     ValueTask<Result<List<GuildBan>>> FindBansByIssuedMemberId(ulong guildId, Guid issuedMemberId);
     ValueTask<Result<List<GuildBan>>> FindBansByBannedMemberId(ulong guildId, Guid bannedMemberId);
+    ValueTask<Result> UpdateGuildBan(ulong guildBanId, Action<GuildBan> updateAction);
+
 }

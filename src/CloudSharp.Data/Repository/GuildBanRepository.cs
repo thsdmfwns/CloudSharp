@@ -119,4 +119,17 @@ public class GuildBanRepository(DatabaseContext databaseContext) : IGuildBanRepo
 
         return findResult.Value;
     }
+
+    public async ValueTask<Result> UpdateGuildBan(ulong guildBanId, Action<GuildBan> updateAction)
+    {
+        var guildBan = await databaseContext.GuildBans.FindAsync(guildBanId);
+        if (guildBan is null)
+        {
+            return Result.Fail("guild ban not found");
+        }
+        updateAction.Invoke(guildBan);
+        var saveResult = await databaseContext.SaveChangesAsyncWithResult();
+        return Result.OkIf(saveResult.IsSuccess, 
+            new Error("fail to UpdateGuildBan during save").CausedBy(saveResult.Errors));
+    }
 }
