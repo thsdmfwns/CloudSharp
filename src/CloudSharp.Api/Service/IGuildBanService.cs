@@ -13,7 +13,7 @@ public interface IGuildBanService
     ValueTask<Result<GuildBanDto>> GetLatestExisted(ulong guildId, Guid bannedMemberId);
 
     ValueTask<Result<List<GuildBanDto>>> GetBansByGuildId(ulong guildId);
-    ValueTask<Result<List<GuildBanDto>>> GetDoBans(ulong guildId, Guid issuerMemberId);
+    ValueTask<Result<List<GuildBanDto>>> GetIssuedBans(ulong guildId, Guid issuerMemberId);
     ValueTask<Result<List<GuildBanDto>>> GetBanned(ulong guildId, Guid bannedMemberId);
 
     ValueTask<Result> UnBan(ulong guildBanId);
